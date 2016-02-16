@@ -13,12 +13,15 @@ public class HttpRequest {
     private final String body;
 
     public HttpRequest(HttpRequestMethod method,
-	    Map<HeaderField, String> headers, String body) {
+	    Map<HeaderField, String> headers, Map<String, String> cookies,
+	    String body) {
 	super();
 	this.method = method;
-	this.headers = headers;
+	this.headers = (headers != null) ? headers
+		: new HashMap<HeaderField, String>();
+	this.cookies = (cookies != null) ? cookies
+		: new HashMap<String, String>();
 	this.body = body;
-	this.cookies = new HashMap<String, String>();
     }
 
     public HttpRequestMethod getMethod() {
@@ -50,8 +53,33 @@ public class HttpRequest {
     }
 
     public static HttpRequest parse(String httpRequest) {
-
 	return null;
+    }
+
+    @Override
+    public String toString() {
+	if (method == null)
+	    return "";
+
+	String request = method.name() + " / http/1.1";
+
+	for (HeaderField field : headers.keySet()) {
+	    request += field.getName() + ": " + headers.get(field) + "\n";
+	}
+
+	if (!cookies.isEmpty()) {
+	    request += "Cookie:";
+	}
+
+	for (String name : cookies.keySet()) {
+	    request += " " + name + "=" + cookies.get(name) + ";";
+	}
+
+	request += "\n\n";
+	if (body != null)
+	    request += body;
+
+	return request;
     }
 
 }

@@ -15,7 +15,8 @@ public enum HeaderRequestField implements HeaderField {
 	this.name = name;
     }
 
-    private String getName() {
+    @Override
+    public String getName() {
 	return this.name;
     }
 
