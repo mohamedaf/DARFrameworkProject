@@ -29,11 +29,11 @@ public class HttpResponse {
 	return status;
     }
 
-    public String addHeaderValue(HeaderField field, String value) {
+    public String addHeaderValue(HeaderResponseField field, String value) {
 	return headers.put(field, value);
     }
 
-    public String getHeaderValue(HeaderField field) {
+    public String getHeaderValue(HeaderResponseField field) {
 	return headers.get(field);
     }
 
@@ -90,7 +90,7 @@ public class HttpResponse {
 		+ headers.get(HeaderResponseField.CONTENT_ENCODING)
 		+ "\">\n"
 		+ "<title>Http Server Response</title>\n</head>\n<body>\n";
-	htmlResponse += this.toString();
+	htmlResponse += this.toString().replaceAll("\n", "<br>");
 	htmlResponse += "\n</body>\n</html>";
 	return htmlResponse;
     }
