@@ -10,7 +10,7 @@ public class HttpServerThread extends Thread {
     public HttpServerThread() throws IOException {
 	super();
 	run = true;
-	this.welcomeSocket = new ServerSocket(80);
+	this.welcomeSocket = new ServerSocket(1024);
     }
 
     @Override
