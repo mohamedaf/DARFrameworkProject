@@ -44,12 +44,10 @@ public class SocketThread extends Thread {
 
 					HttpResponse rp = new HttpResponse(HttpResponseStatus.OK, rq.getHeaders(), rq.getCookies(),
 							rq.getBody());
-					System.out.println(
-							"HTTP/1.1 200 OK\nDate: Mon, 23 May 2005 22:38:34 GMT\nServer: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\nLast-Modified: Wed, 08 Jan 2003 23:11:55 GMT\nETag: \"3f80f-1b6-3e1cb03b\"\nContent-Type: text/html; charset=UTF-8\nContent-Length: 138\nAccept-Ranges: bytes\n\n"
-									+ rp.getHtmlResponse());
-					printWriter.write(
-							"HTTP/1.1 200 OK\nDate: Mon, 23 May 2005 22:38:34 GMT\nServer: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\nLast-Modified: Wed, 08 Jan 2003 23:11:55 GMT\nETag: \"3f80f-1b6-3e1cb03b\"\nContent-Type: text/html; charset=UTF-8\nContent-Length: 138\nAccept-Ranges: bytes\n\n"
-									+ rp.getHtmlResponse());
+					String body = rp.getHtmlResponse();
+					printWriter
+							.write("HTTP/1.1 200 OK\nDate: Mon, 23 May 2005 22:38:34 GMT\nServer: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\nLast-Modified: Wed, 08 Jan 2003 23:11:55 GMT\nETag: \"3f80f-1b6-3e1cb03b\"\nContent-Type: text/html; charset=UTF-8\nContent-Length: "
+									+ body.length() + "\nAccept-Ranges: bytes\n\n" + body);
 					printWriter.flush();
 					printWriter.flush();
 				} catch (Exception e) {
