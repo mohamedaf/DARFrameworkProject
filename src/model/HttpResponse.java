@@ -1,5 +1,7 @@
 package model;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,16 +15,25 @@ public class HttpResponse {
     private final Map<String, String> cookies;
     private final String body;
 
-    public HttpResponse(HttpResponseStatus status,
-	    Map<HeaderField, String> headers, Map<String, String> cookies,
-	    String body) {
+    public HttpResponse(HttpResponseStatus status, HttpRequest request) {
 	super();
 	this.status = status;
-	this.headers = (headers != null) ? headers
+	this.headers = (request.getHeaders() != null) ? request.getHeaders()
 		: new HashMap<HeaderField, String>();
-	this.cookies = (cookies != null) ? cookies
+	this.cookies = (request.getCookies() != null) ? request.getCookies()
 		: new HashMap<String, String>();
-	this.body = body;
+	this.body = request.toString();
+	initHeaders(request.getContentType());
+    }
+    
+    public void initHeaders(String contentType){
+	Date date = new Date( );
+	SimpleDateFormat form = new SimpleDateFormat ("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+	headers.put(HeaderResponseField.DATE, form.format(date));
+	headers.put(HeaderResponseField.SERVER, "Apache/1.3.3.7 (Unix) (Red-Hat/Linux)");
+	headers.put(HeaderResponseField.CONTENT_ENCODING, "UTF-8");
+	headers.put(HeaderResponseField.CONTENT_LENGTH, String.valueOf(body.length()));
+	headers.put(HeaderResponseField.CONTENT_TYPE, contentType);
     }
 
     public HttpResponseStatus getStatus() {
@@ -59,15 +70,7 @@ public class HttpResponse {
 	    return "";
 	}
 
-	String response = "HTTP/1.1 "
-		+ status.getStatus()
-		+ " "
-		+ status.name()
-		+ "\nDate: Mon, 23 May 2005 22:38:34 GMT\nServer: Apache/1.3.3.7 "
-		+ "(Unix) (Red-Hat/Linux)\nLast-Modified: Wed, 08 Jan 2003 23:11:55 "
-		+ "GMT\nETag: \"3f80f-1b6-3e1cb03b\"\nContent-Type: text/html; "
-		+ "charset=UTF-8\nContent-Length: " + body.length()
-		+ "\nAccept-Ranges: bytes\n";
+	String response = "HTTP/1.1 " + status.getStatus() + " " + status.name() + "\n";
 
 	for (HeaderField field : headers.keySet()) {
 	    response += field.getName() + ": " + headers.get(field) + "\n";

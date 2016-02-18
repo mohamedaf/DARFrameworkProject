@@ -75,23 +75,10 @@ public class HttpRequest {
 	}
 	method = HttpRequestMethod.valueOf(lines[0].split(" ")[0]);
 
-	HeaderField key;
-	String value;
-	String[] splitL, cookiePair;
 	for (int i = 1; i < lines.length; i++) {
 	    if (!reachedBody) {
 		if (lines[i].length() > 0) {
-		    splitL = lines[i].split(": ");
-		    key = HeaderRequestField.getField(splitL[0]);
-		    value = splitL[1];
-		    if (key == HeaderRequestField.COOKIE) {
-			for (String s : value.split(";")) {
-			    cookiePair = s.split(":");
-			    cookies.put(cookiePair[0], cookiePair[1]);
-			}
-		    } else if (key != null) {
-			headers.put(key, value);
-		    }
+		    parseHeader(lines, cookies, headers, i);
 		} else {
 		    reachedBody = true;
 		}
@@ -103,8 +90,56 @@ public class HttpRequest {
 	return new HttpRequest(method, headers, cookies, body);
     }
 
+    private static void parseHeader(String[] lines,
+	    Map<String, String> cookies, Map<HeaderField, String> headers, int i) {
+	HeaderField key;
+	String value;
+	String[] splitL, cookiePair;
+
+	splitL = lines[i].split(": ");
+	key = HeaderRequestField.getField(splitL[0]);
+	value = splitL[1];
+	if (key == HeaderRequestField.COOKIE) {
+	    for (String s : value.split(";")) {
+		cookiePair = s.split(":");
+		cookies.put(cookiePair[0], cookiePair[1]);
+	    }
+	} else if (key != null) {
+	    headers.put(key, value);
+	} else if (!headers.containsKey(HeaderRequestField.UNKNOWN)) {
+	    headers.put(HeaderRequestField.UNKNOWN, value);
+	} else {
+	    value = headers.get(HeaderRequestField.UNKNOWN) + " ; " + value;
+	    headers.put(HeaderRequestField.UNKNOWN, value);
+	}
+    }
+
     @Override
     public String toString() {
+	if (headers.containsKey(HeaderRequestField.ACCEPT)) {
+	    if (headers.get(HeaderRequestField.ACCEPT).startsWith("text/html")) {
+		return this.getHtmlResponse();
+	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith(
+		    "application/json")) {
+		return this.getJsonResponse();
+	    }
+	}
+	return this.getTextResponse();
+    }
+
+    public String getContentType() {
+	if (headers.containsKey(HeaderRequestField.ACCEPT)) {
+	    if (headers.get(HeaderRequestField.ACCEPT).startsWith("text/html")) {
+		return "text/html";
+	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith(
+		    "application/json")) {
+		return "application/json";
+	    }
+	}
+	return "text/plain";
+    }
+
+    public String getTextResponse() {
 	if (method == null)
 	    return "";
 
@@ -129,19 +164,15 @@ public class HttpRequest {
 	return request;
     }
 
-    public String getTextResponse() {
-	return this.toString();
-    }
-
     public String getHtmlResponse() {
 	String htmlRequest = "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\""
 		+ headers.get(HeaderResponseField.CONTENT_ENCODING)
 		+ "\">\n"
 		+ "<title>Http Server Response</title>\n</head>\n<body>\n";
-	htmlRequest += method.name() + " / HTTP/1.1\n";
 
 	if (method != null) {
-	    htmlRequest += "<table style=\"width:100%\">";
+	    htmlRequest += "<table rules=\"all\" style=\"width:100%; border:solid 1px black;\">"
+	    	+ "<caption>"+ method.name() + " / HTTP/1.1</caption>\n";
 
 	    for (HeaderField field : headers.keySet()) {
 		if (field.equals(HeaderResponseField.CONTENT_TYPE))
@@ -173,27 +204,25 @@ public class HttpRequest {
     }
 
     public String getJsonResponse() {
-	String request = "{ 'response' : '" + method.name() + " / http/1.1',\n";
+	String request = "{";
 
 	if (method != null) {
+	    request += "\"response\" : \"" + method.name() + " / HTTP/1.1\",\n";
 	    for (HeaderField field : headers.keySet()) {
-		if (field.equals(HeaderResponseField.CONTENT_TYPE))
-		    request += "'" + field.getName() + "' : 'text/json',\n";
-		else
-		    request += "'" + field.getName() + "' : '"
-			    + headers.get(field) + "',\n";
+		request += "\"" + field.getName() + "\" : \""
+			+ headers.get(field) + "\",\n";
 	    }
 
 	    if (!cookies.isEmpty()) {
-		request += "'Cookie' :";
+		request += "\"Cookie\" :";
 	    }
 
 	    for (String name : cookies.keySet()) {
-		request += " '" + name + "=" + cookies.get(name) + "',\n";
+		request += " \"" + name + "=" + cookies.get(name) + "\",\n";
 	    }
 
 	    if (body != null)
-		request += "'body' : '" + body + "'";
+		request += "\"body\" : \"" + body + "\"";
 
 	}
 

@@ -40,8 +40,7 @@ public class SocketThread extends Thread {
 	    if (request.length() > 0) {
 		try {
 		    HttpRequest rq = HttpRequest.parse(request);
-		    HttpResponse rp = new HttpResponse(HttpResponseStatus.OK,
-			    rq.getHeaders(), rq.getCookies(), rq.getHtmlResponse());
+		    HttpResponse rp = new HttpResponse(HttpResponseStatus.OK, rq);
 		    System.out.println(rp.toString());
 		    printWriter.write(rp.toString());
 		    printWriter.flush();

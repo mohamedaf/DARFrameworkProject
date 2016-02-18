@@ -23,7 +23,8 @@ public enum HeaderRequestField implements HeaderField {
 	HOST("Host"),
 	COOKIE("Cookie"),
 	RANGE("Range"),
-	DNT("DNT");
+	DNT("DNT"),
+	UNKNOWN("Unknown");
 
 	private String name;
 
