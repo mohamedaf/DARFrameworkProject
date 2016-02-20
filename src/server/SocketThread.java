@@ -15,12 +15,15 @@ public class SocketThread extends Thread {
     private PrintWriter printWriter;
     private boolean run;
 
-    public SocketThread(Socket socket) throws IOException {
+    public SocketThread(Socket socket) {
 	super();
-	bufferedReader = new BufferedReader(new InputStreamReader(
-		socket.getInputStream()));
-	printWriter = new PrintWriter(socket.getOutputStream());
-	socket.setSoTimeout(100);
+	try {
+	    bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	    printWriter = new PrintWriter(socket.getOutputStream());
+	    socket.setSoTimeout(100);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
 	run = true;
     }
 
