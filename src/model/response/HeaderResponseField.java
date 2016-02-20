@@ -1,4 +1,6 @@
-package model.header;
+package model.response;
+
+import model.HeaderField;
 
 public enum HeaderResponseField implements HeaderField {
 

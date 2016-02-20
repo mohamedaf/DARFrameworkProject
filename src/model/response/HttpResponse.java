@@ -1,12 +1,12 @@
-package model;
+package model.response;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import model.header.HeaderField;
-import model.header.HeaderResponseField;
+import model.HeaderField;
+import model.request.HttpRequest;
 
 public class HttpResponse {
 

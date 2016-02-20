@@ -1,4 +1,6 @@
-package model.header;
+package model.request;
+
+import model.HeaderField;
 
 public enum HeaderRequestField implements HeaderField {
 

@@ -1,4 +1,4 @@
-package model.header;
+package model;
 
 public interface HeaderField {
 

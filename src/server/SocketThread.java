@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import model.HttpRequest;
-import model.HttpResponse;
-import model.HttpResponseStatus;
+import model.request.HttpRequest;
+import model.response.HttpResponse;
+import model.response.HttpResponseStatus;
 
 public class SocketThread extends Thread {
     private BufferedReader bufferedReader;

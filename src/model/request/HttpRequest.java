@@ -1,11 +1,10 @@
-package model;
+package model.request;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import model.header.HeaderField;
-import model.header.HeaderRequestField;
-import model.header.HeaderResponseField;
+import model.HeaderField;
+import model.response.HeaderResponseField;
 
 public class HttpRequest {
 

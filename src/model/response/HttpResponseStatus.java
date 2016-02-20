@@ -1,4 +1,4 @@
-package model;
+package model.response;
 
 public enum HttpResponseStatus {
     OK("200"), Created("201"), Accepted("202"), Non_Authoritative_Information(
