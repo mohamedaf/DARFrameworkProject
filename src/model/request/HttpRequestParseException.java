@@ -1,6 +1,8 @@
 package model.request;
 
-public class HttpRequestParseException extends Exception {
+import java.io.IOException;
+
+public class HttpRequestParseException extends IOException {
 
     private static final long serialVersionUID = 5792443088605596602L;
 

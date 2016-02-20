@@ -1,5 +1,9 @@
 package model.request;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,20 +13,34 @@ import model.response.HeaderResponseField;
 public class HttpRequest {
 
     private final HttpRequestMethod method;
+    private final URL url;
+    private final Map<String, String> params;
     private final Map<HeaderField, String> headers;
     private final Map<String, String> cookies;
     private final String body;
 
-    private HttpRequest(HttpRequestMethod method,
-	    Map<HeaderField, String> headers, Map<String, String> cookies,
-	    String body) {
+    private HttpRequest(HttpRequestMethod method, URL url,
+	    Map<String, String> params, Map<HeaderField, String> headers,
+	    Map<String, String> cookies, String body) {
 	super();
 	this.method = method;
-	this.headers = (headers != null) ? headers
-		: new HashMap<HeaderField, String>();
-	this.cookies = (cookies != null) ? cookies
-		: new HashMap<String, String>();
+	this.url = url;
+	this.params = (params != null) ? params : new HashMap<String, String>();
+	this.headers = (headers != null) ? headers : new HashMap<HeaderField, String>();
+	this.cookies = (cookies != null) ? cookies : new HashMap<String, String>();
 	this.body = body;
+    }
+
+    public HttpRequestMethod getMethod() {
+	return method;
+    }
+
+    public URL getUrl() {
+	return url;
+    }
+
+    public Map<String, String> getParams() {
+	return params;
     }
 
     public Map<HeaderField, String> getHeaders() {
@@ -31,10 +49,6 @@ public class HttpRequest {
 
     public Map<String, String> getCookies() {
 	return cookies;
-    }
-
-    public HttpRequestMethod getMethod() {
-	return method;
     }
 
     public String addHeaderValue(HeaderField field, String value) {
@@ -62,7 +76,7 @@ public class HttpRequest {
     }
 
     public static HttpRequest parse(String httpRequest)
-	    throws HttpRequestParseException {
+	    throws HttpRequestParseException, MalformedURLException, UnsupportedEncodingException {
 	Map<HeaderField, String> headers = new HashMap<>();
 	Map<String, String> cookies = new HashMap<>();
 	StringBuilder body = new StringBuilder();
@@ -74,8 +88,15 @@ public class HttpRequest {
 		    "Error ! Request can't be empty");
 	}
 
-	HttpRequestMethod method = HttpRequestMethod.valueOf(lines[0]
-		.split(" ")[0]);
+	String[] firstLine = lines[0].split(" ");
+
+	if (firstLine.length < 3) {
+	    throw new HttpRequestParseException(
+		    "Error ! Request first line is not correct");
+	}
+
+	HttpRequestMethod method = HttpRequestMethod.valueOf(firstLine[0]);
+	URL url = new URL("http:/" + firstLine[1]);
 
 	while (i < lines.length) {
 	    if (lines[i].length() > 0) {
@@ -91,7 +112,26 @@ public class HttpRequest {
 	    i++;
 	}
 
-	return new HttpRequest(method, headers, cookies, body.toString());
+	return new HttpRequest(method, url, splitQuery(url), headers, cookies,
+		body.toString());
+    }
+
+    public static Map<String, String> splitQuery(URL url)
+	    throws UnsupportedEncodingException {
+	Map<String, String> query_pairs = new HashMap<String, String>();
+	
+	if(url == null || url.getQuery() == null)
+	    return query_pairs;
+	
+	String query = url.getQuery();
+	String[] pairs = query.split("&");
+	for (String pair : pairs) {
+	    int idx = pair.indexOf("=");
+	    query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
+		    URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+	}
+	
+	return query_pairs;
     }
 
     private static void parseHeader(String[] lines,
@@ -143,10 +183,12 @@ public class HttpRequest {
 	if (method == null)
 	    return new String();
 
-	StringBuilder textRequest = new StringBuilder(method.name() + " / HTTP/1.1\n");
+	StringBuilder textRequest = new StringBuilder(method.name()
+		+ " / HTTP/1.1\n");
 
 	for (HeaderField field : headers.keySet()) {
-	    textRequest.append(field.getName() + ": " + headers.get(field) + "\n");
+	    textRequest.append(field.getName() + ": " + headers.get(field)
+		    + "\n");
 	}
 
 	if (!cookies.isEmpty()) {
@@ -165,23 +207,28 @@ public class HttpRequest {
     }
 
     public String getHtmlResponse() {
-	StringBuilder htmlRequest = new StringBuilder("<!DOCTYPE html>\n<html>\n"
-		+ "<head> \n<meta charset=\""
-		+ headers.get(HeaderResponseField.CONTENT_ENCODING)
-		+ "\">\n"
-		+ "<title>Http Server Response</title>\n</head>\n<body>\n");
+	StringBuilder htmlRequest = new StringBuilder(
+		"<!DOCTYPE html>\n<html>\n"
+			+ "<head> \n<meta charset=\""
+			+ headers.get(HeaderResponseField.CONTENT_ENCODING)
+			+ "\">\n"
+			+ "<title>Http Server Response</title>\n</head>\n<body>\n");
 
 	if (method != null) {
-	    htmlRequest.append("<table rules=\"all\" style=\"width:100%; border:solid 1px black;\">"
-		    + "<caption>" + method.name() + " / HTTP/1.1</caption>\n");
+	    htmlRequest
+		    .append("<table rules=\"all\" style=\"width:100%; border:solid 1px black;\">"
+			    + "<caption>"
+			    + method.name()
+			    + " / HTTP/1.1</caption>\n");
 
 	    for (HeaderField field : headers.keySet()) {
 		if (field.equals(HeaderResponseField.CONTENT_TYPE))
 		    htmlRequest.append("<tr><td>" + field.getName()
 			    + ":</td><td>text/html</td></tr>\n");
 		else
-		    htmlRequest.append("<tr><td>" + field.getName() + ":</td><td>"
-			    + headers.get(field) + "</td></tr>\n");
+		    htmlRequest.append("<tr><td>" + field.getName()
+			    + ":</td><td>" + headers.get(field)
+			    + "</td></tr>\n");
 	    }
 
 	    if (!cookies.isEmpty()) {
@@ -219,7 +266,8 @@ public class HttpRequest {
 	    }
 
 	    for (String name : cookies.keySet()) {
-		jsonRequest.append(" \"" + name + "=" + cookies.get(name) + "\",\n");
+		jsonRequest.append(" \"" + name + "=" + cookies.get(name)
+			+ "\",\n");
 	    }
 
 	    if (body != null)
