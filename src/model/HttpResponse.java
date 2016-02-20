@@ -26,7 +26,7 @@ public class HttpResponse {
 	initHeaders(request.getContentType());
     }
     
-    public void initHeaders(String contentType){
+    private void initHeaders(String contentType){
 	Date date = new Date( );
 	SimpleDateFormat form = new SimpleDateFormat ("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 	headers.put(HeaderResponseField.DATE, form.format(date));
@@ -67,28 +67,29 @@ public class HttpResponse {
     @Override
     public String toString() {
 	if (status == null) {
-	    return "";
+	    return new String();
 	}
 
-	String response = "HTTP/1.1 " + status.getStatus() + " " + status.name() + "\n";
+	StringBuilder response = new StringBuilder("HTTP/1.1 " + status.getStatus()
+		+ " " + status.name() + "\n");
 
 	for (HeaderField field : headers.keySet()) {
-	    response += field.getName() + ": " + headers.get(field) + "\n";
+	    response.append(field.getName() + ": " + headers.get(field) + "\n");
 	}
 
 	if (!cookies.isEmpty()) {
-	    response += "Cookie:";
+	    response.append("Cookie:");
 	    for (String name : cookies.keySet()) {
-		response += " " + name + "=" + cookies.get(name) + ";";
+		response.append(" " + name + "=" + cookies.get(name) + ";");
 	    }
-	    response += "\n";
+	    response.append("\n");
 	}
 
-	response += "\n";
+	response.append("\n");
 
 	if (body != null)
-	    response += body;
+	    response.append(body);
 
-	return response;
+	return response.toString();
     }
 }

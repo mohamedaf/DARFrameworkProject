@@ -14,10 +14,9 @@ public class HttpClientMain {
 	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(
 		System.in));
 	Socket clientSocket = new Socket("localhost", 80);
-	DataOutputStream outToServer = new DataOutputStream(
-		clientSocket.getOutputStream());
-	BufferedReader inFromServer = new BufferedReader(new InputStreamReader(
-		clientSocket.getInputStream()));
+	DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	BufferedReader inFromServer = new BufferedReader(
+		new InputStreamReader(clientSocket.getInputStream()));
 
 	while (true) {
 	    sentence = inFromUser.readLine();

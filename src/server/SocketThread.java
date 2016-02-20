@@ -11,23 +11,16 @@ import model.HttpResponse;
 import model.HttpResponseStatus;
 
 public class SocketThread extends Thread {
-    private Socket socket;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private boolean run;
 
-    public SocketThread(Socket socket) {
+    public SocketThread(Socket socket) throws IOException {
 	super();
-	this.socket = socket;
-	try {
-	    bufferedReader = new BufferedReader(new InputStreamReader(
-		    socket.getInputStream()));
-	    printWriter = new PrintWriter(socket.getOutputStream());
-
-	    socket.setSoTimeout(100);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
+	bufferedReader = new BufferedReader(new InputStreamReader(
+		socket.getInputStream()));
+	printWriter = new PrintWriter(socket.getOutputStream());
+	socket.setSoTimeout(100);
 	run = true;
     }
 
@@ -53,15 +46,16 @@ public class SocketThread extends Thread {
     }
 
     private String readRequest() {
-	String s, res = "";
+	String s;
+	StringBuilder res = new StringBuilder();
 	try {
 	    while ((s = bufferedReader.readLine()) != null) {
 		System.out.println(s);
-		res += s + "\n";
+		res.append(s + "\n");
 	    }
 	} catch (IOException e) {
 	}
-	return res;
+	return res.toString();
     }
 
     public void stopThread() {
