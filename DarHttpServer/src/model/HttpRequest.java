@@ -1,4 +1,4 @@
-package model.request;
+package model;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.HeaderField;
+import model.request.HeaderRequestField;
+import model.request.HttpRequestMethod;
+import model.request.IHttpRequest;
 import model.response.HeaderResponseField;
 
-public class HttpRequest {
+public class HttpRequest implements IHttpRequest{
 
     private final HttpRequestMethod method;
     private final URL url;

@@ -1,19 +1,20 @@
-package model.response;
+package model;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import model.HeaderField;
-import model.request.HttpRequest;
+import model.response.HeaderResponseField;
+import model.response.HttpResponseStatus;
+import model.response.IHttpResponse;
 
-public class HttpResponse {
+public class HttpResponse implements IHttpResponse {
 
-    private final HttpResponseStatus status;
+    private HttpResponseStatus status;
     private final Map<HeaderField, String> headers;
     private final Map<String, String> cookies;
-    private final String body;
+    private String body;
 
     public HttpResponse(HttpResponseStatus status, HttpRequest request) {
 	super();
@@ -36,6 +37,10 @@ public class HttpResponse {
 	headers.put(HeaderResponseField.CONTENT_TYPE, contentType);
     }
 
+    public void setStatus(HttpResponseStatus status) {
+        this.status = status;
+    }
+    
     public HttpResponseStatus getStatus() {
 	return status;
     }
@@ -46,10 +51,6 @@ public class HttpResponse {
 
     public String getHeaderValue(HeaderResponseField field) {
 	return headers.get(field);
-    }
-
-    public String getBody() {
-	return body;
     }
 
     public boolean haveCookie(String key) {
@@ -64,6 +65,14 @@ public class HttpResponse {
 	return cookies.get(key);
     }
 
+    public void setBody(String body) {
+        this.body = body;
+    }
+    
+    public String getBody() {
+	return body;
+    }
+    
     @Override
     public String toString() {
 	if (status == null) {
