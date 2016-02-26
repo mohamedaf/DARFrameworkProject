@@ -7,9 +7,11 @@ public class Point {
     private int y;
 
     public Point(int id, int x, int y) {
+	
 	this.id = id;
 	this.x = x;
 	this.y = y;
+	
     }
 
     public int getId() {
@@ -38,7 +40,7 @@ public class Point {
 
     @Override
     public String toString() {
-	return "x=+" + x + ", y=" + y;
+	return "[id=" + id + ", x=+" + x + ", y=" + y+"]";
     }
 
 }

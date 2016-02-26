@@ -13,10 +13,12 @@ public class Points {
     }
 
     public Point addPoint(int x, int y) {
+	
 	Point p = new Point(id, x, y);
 	points.put(id, p);
 	id++;
 	return p;
+	
     }
 
     public Point getPoint(int id) {
@@ -29,16 +31,18 @@ public class Points {
 
     @Override
     public String toString() {
+	
 	StringBuilder pointsStr = new StringBuilder("{ ");
 	Point p;
 
 	for (Integer ind : points.keySet()) {
 	    p = points.get(ind);
-	    pointsStr.append("[x=" + p.getX() + ", y=" + p.getY() + "] ");
+	    pointsStr.append(p.toString() + " ");
 	}
 
 	pointsStr.append("}");
 	return pointsStr.toString();
+	
     }
 
 }

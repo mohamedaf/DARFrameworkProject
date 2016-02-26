@@ -16,7 +16,19 @@ public class HttpResponse implements IHttpResponse {
     private final Map<String, String> cookies;
     private String body;
 
+    public HttpResponse(HttpResponseStatus status, String contentType, String body) {
+	
+	super();
+	this.status = status;
+	this.headers = new HashMap<HeaderField, String>();
+	this.cookies = new HashMap<String, String>();
+	this.body = body;
+	initHeaders(contentType);
+	
+    }
+    
     public HttpResponse(HttpResponseStatus status, HttpRequest request) {
+	
 	super();
 	this.status = status;
 	this.headers = (request.getHeaders() != null) ? request.getHeaders()
@@ -25,9 +37,11 @@ public class HttpResponse implements IHttpResponse {
 		: new HashMap<String, String>();
 	this.body = request.toString();
 	initHeaders(request.getContentType());
+	
     }
     
     private void initHeaders(String contentType){
+	
 	Date date = new Date( );
 	SimpleDateFormat form = new SimpleDateFormat ("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 	headers.put(HeaderResponseField.DATE, form.format(date));
@@ -35,6 +49,11 @@ public class HttpResponse implements IHttpResponse {
 	headers.put(HeaderResponseField.CONTENT_ENCODING, "UTF-8");
 	headers.put(HeaderResponseField.CONTENT_LENGTH, String.valueOf(body.length()));
 	headers.put(HeaderResponseField.CONTENT_TYPE, contentType);
+	
+    }
+    
+    public void setContentLength(int length){
+	headers.put(HeaderResponseField.CONTENT_LENGTH, String.valueOf(length));
     }
 
     public void setStatus(HttpResponseStatus status) {
@@ -75,6 +94,7 @@ public class HttpResponse implements IHttpResponse {
     
     @Override
     public String toString() {
+	
 	if (status == null) {
 	    return new String();
 	}
@@ -100,5 +120,6 @@ public class HttpResponse implements IHttpResponse {
 	    response.append(body);
 
 	return response.toString();
+	
     }
 }

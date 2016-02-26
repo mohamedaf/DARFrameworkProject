@@ -13,14 +13,22 @@ public class PointController implements IHttpServlet {
 
     private Points points = new Points();
 
+    private void setHttpResponseError(IHttpResponse resp, HttpResponseStatus status) {
+	
+	resp.setStatus(status);
+	resp.setBody("Error " + status.getStatus() + " " + status.name());
+	
+    }
+
     @Override
     public void doGet(IHttpRequest req, IHttpResponse resp) {
+	
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
 
 	if (host.isEmpty()) {
-	    resp.setStatus(HttpResponseStatus.Not_Found);
+	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
 
@@ -39,61 +47,75 @@ public class PointController implements IHttpServlet {
 		    return;
 		}
 	    } catch (NumberFormatException e) {
-		resp.setStatus(HttpResponseStatus.Bad_Request);
+		setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 		return;
 	    }
 	}
 
-	resp.setStatus(HttpResponseStatus.Not_Found);
+	setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	
     }
 
     private void getPointList(IHttpResponse resp) {
+	
 	resp.setBody(points.toString());
+	resp.setContentLength(points.toString().length());
+	
     }
 
     private void getPoint(IHttpResponse resp, int ind) {
+	
 	Point p = points.getPoint(ind);
-	if (p == null)
-	    resp.setStatus(HttpResponseStatus.Not_Found);
-	else {
+	if (p == null) {
+	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	} else {
 	    resp.setBody(p.toString());
+	    resp.setContentLength(p.toString().length());
 	}
+	
     }
 
     private void getPointCoord(IHttpResponse resp, int ind, String coord) {
+	
 	Point p = points.getPoint(ind);
 	if (coord.equalsIgnoreCase("x")) {
-	    resp.setBody("x = " + p.getX());
+	    String body = "x = " + p.getX();
+	    resp.setBody(body);
+	    resp.setContentLength(body.length());
 	} else if (coord.equalsIgnoreCase("y")) {
-	    resp.setBody("y = " + p.getY());
+	    String body = "y = " + p.getY();
+	    resp.setBody(body);
+	    resp.setContentLength(body.length());
 	} else {
-	    resp.setStatus(HttpResponseStatus.Not_Found);
+	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
+	
     }
 
     @Override
     public void doPut(IHttpRequest req, IHttpResponse resp) {
+	
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
 
 	if (host.isEmpty() || path.isEmpty()) {
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 
 	if (host.equalsIgnoreCase("p")) {
 	    String[] splittedPath = path.split("/");
-	    if (splittedPath.length != 1) {
-		resp.setStatus(HttpResponseStatus.Bad_Request);
+	    if (splittedPath.length != 2) {
+		setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 		return;
 	    }
 
 	    try {
-		int ind = Integer.parseInt(splittedPath[0]);
+		int ind = Integer.parseInt(splittedPath[1]);
 		Map<String, String> params = req.getParams();
 		if (params.get("x") == null || params.get("y") == null) {
-		    resp.setStatus(HttpResponseStatus.Bad_Request);
+		    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 		    return;
 		}
 		int x = Integer.parseInt(params.get("x"));
@@ -101,45 +123,51 @@ public class PointController implements IHttpServlet {
 		modifyPoint(resp, ind, x, y);
 		return;
 	    } catch (NumberFormatException e) {
-		resp.setStatus(HttpResponseStatus.Bad_Request);
+		setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 		return;
 	    }
 	}
 
-	resp.setStatus(HttpResponseStatus.Bad_Request);
+	setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	
     }
 
     private void modifyPoint(IHttpResponse resp, int ind, int x, int y) {
+	
 	Point p = points.getPoint(ind);
-	if (p == null)
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
-	else {
+	if (p == null) {
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	} else {
 	    p.setX(x);
 	    p.setY(y);
-	    resp.setBody("The point has been modified, new value :" + p.toString());
+	    String body = "The point has been modified, new value :" + p.toString();
+	    resp.setBody(body);
+	    resp.setContentLength(body.length());
 	}
+	
     }
 
     @Override
     public void doPost(IHttpRequest req, IHttpResponse resp) {
+	
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
-	
+
 	if (!host.equalsIgnoreCase("p") || !path.isEmpty()) {
-	    resp.setStatus(HttpResponseStatus.Not_Found);
+	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
 
 	if (req.getBody().isEmpty()) {
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 
 	String[] coords = req.getBody().split(";");
-	
+
 	if (coords.length < 2) {
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 
@@ -152,25 +180,30 @@ public class PointController implements IHttpServlet {
 	    addPoint(resp, x, y);
 	    return;
 	} catch (NumberFormatException e) {
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 
     }
 
     public void addPoint(IHttpResponse resp, int x, int y) {
+	
 	Point p = points.addPoint(x, y);
-	resp.setBody("new Point created : " + p.toString());
+	String body = "new Point created : " + p.toString();
+	resp.setBody(body);
+	resp.setContentLength(body.length());
+	
     }
 
     @Override
     public void doDelete(IHttpRequest req, IHttpResponse resp) {
+	
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
 
 	if (!host.equalsIgnoreCase("p") || path.isEmpty()) {
-	    resp.setStatus(HttpResponseStatus.Bad_Request);
+	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 
@@ -181,19 +214,24 @@ public class PointController implements IHttpServlet {
 		deletePoint(resp, ind);
 		return;
 	    } catch (NumberFormatException e) {
-		resp.setStatus(HttpResponseStatus.Bad_Request);
+		setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 		return;
 	    }
 	}
 
-	resp.setStatus(HttpResponseStatus.Bad_Request);
+	setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	
     }
 
     private void deletePoint(IHttpResponse resp, int ind) {
+	
+	String body = points.getPoints().toString() + " Removed";
 	points.getPoints().remove(ind);
-	resp.setBody("Removed");
+	resp.setBody(body);
+	resp.setContentLength(body.length());
+	
     }
-    
+
     public String toString() {
 	return points.toString();
     }

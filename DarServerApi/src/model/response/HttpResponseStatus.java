@@ -37,10 +37,12 @@ public enum HttpResponseStatus {
     }
 
     public static HttpResponseStatus getStatus(String code) {
+	
 	for (HttpResponseStatus status : HttpResponseStatus.values()) {
 	    if (status.getStatus().equalsIgnoreCase(code))
 		return status;
 	}
 	return null;
+	
     }
 }

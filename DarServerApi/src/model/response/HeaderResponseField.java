@@ -51,11 +51,13 @@ public enum HeaderResponseField implements HeaderField {
     }
 
     public static HeaderResponseField getField(String reqName) {
+	
 	for (HeaderResponseField field : HeaderResponseField.values()) {
 	    if (field.getName().equalsIgnoreCase(reqName))
 		return field;
 	}
 	return null;
+	
     }
 
 }

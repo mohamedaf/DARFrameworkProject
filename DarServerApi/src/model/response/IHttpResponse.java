@@ -2,6 +2,8 @@ package model.response;
 
 
 public interface IHttpResponse {
+    
+    public void setContentLength(int length);
 
     public void setStatus(HttpResponseStatus status);
     
