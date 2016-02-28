@@ -5,8 +5,10 @@ import point.PointController;
 
 public class ControllerFactory {
     
+    private static final PointController pointController = new PointController();
+    
     public static IHttpServlet getPointController() {
-	return new PointController();
+	return pointController;
     }
 
 }

@@ -30,8 +30,7 @@ public class HttpServerMain {
 		    + e.getMessage());
 	    e.printStackTrace();
 	} catch (JDOMException e) {
-	    System.out
-		    .println("Erreur lors de la construction du fichier JDOM "
+	    System.out.println("Erreur lors de la construction du fichier JDOM "
 			    + e.getMessage());
 	    e.printStackTrace();
 	}

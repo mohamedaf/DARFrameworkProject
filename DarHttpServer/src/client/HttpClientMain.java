@@ -11,12 +11,10 @@ public class HttpClientMain {
 
 	String sentence;
 	String modifiedSentence;
-	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(
-		System.in));
+	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 	Socket clientSocket = new Socket("localhost", 80);
 	DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-	BufferedReader inFromServer = new BufferedReader(
-		new InputStreamReader(clientSocket.getInputStream()));
+	BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
 	while (true) {
 	    sentence = inFromUser.readLine();

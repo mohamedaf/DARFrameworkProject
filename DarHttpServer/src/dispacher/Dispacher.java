@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import model.request.HttpRequestMethod;
+import model.response.HttpResponseError;
+import model.response.HttpResponseStatus;
+import model.response.IHttpResponse;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -27,19 +30,18 @@ public class Dispacher {
     @SuppressWarnings("rawtypes")
     public boolean isValidApplication(String name) {
 
-	Element racine = document.getRootElement();
-	Element noeudCourant = null;
+	Element rootNode = document.getRootElement();
+	Element currentNode = null;
 	String applicationName = null;
 
 	try {
 	    XPath xpa = XPath.newInstance("//application");
-	    Iterator iter = xpa.selectNodes(racine).iterator();
+	    Iterator iter = xpa.selectNodes(rootNode).iterator();
 
 	    while (iter.hasNext()) {
-		noeudCourant = (Element) iter.next();
-		applicationName = noeudCourant.getAttributeValue("name");
-		if (applicationName != null
-			&& applicationName.equalsIgnoreCase(name))
+		currentNode = (Element) iter.next();
+		applicationName = currentNode.getAttributeValue("name");
+		if (applicationName != null && applicationName.equalsIgnoreCase(name))
 		    return true;
 	    }
 
@@ -53,26 +55,25 @@ public class Dispacher {
     }
 
     @SuppressWarnings("rawtypes")
-    public String isValidPath(HttpRequestMethod method, String path, Map<String, String> params) {
+    public DispacherResult isValidPath(IHttpResponse resp,
+	    HttpRequestMethod method, String path, Map<String, String> params) {
 
-	Element racine = document.getRootElement();
+	Element rootNode = document.getRootElement();
 	Element pathNode = null;
 	String pathMethod = null;
 	String pathValue = null;
 
 	try {
 	    XPath xpa = XPath.newInstance("//path");
-	    Iterator iter = xpa.selectNodes(racine).iterator();
+	    Iterator iter = xpa.selectNodes(rootNode).iterator();
 
 	    while (iter.hasNext()) {
 		pathNode = (Element) iter.next();
 		pathMethod = pathNode.getAttributeValue("method");
 		pathValue = pathNode.getAttributeValue("value");
 
-		if (pathMethod.equalsIgnoreCase(method.name())
-			&& path.matches(pathValue)
-			&& checkQueryString(pathNode, params)) {
-		    return pathNode.getAttributeValue("call");
+		if (pathMethod.equalsIgnoreCase(method.name()) && path.matches(pathValue)) {
+		    return checkPathNode(resp, pathNode, params);
 		}
 	    }
 
@@ -81,13 +82,28 @@ public class Dispacher {
 	    e.printStackTrace();
 	}
 
+	HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	return null;
 
     }
 
-    @SuppressWarnings("unchecked")
-    private boolean checkQueryString(Element pathNode,
+    private DispacherResult checkPathNode(IHttpResponse resp, Element pathNode,
 	    Map<String, String> params) {
+
+	if (checkQueryString(pathNode, params)) {
+	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
+	    IHttpServlet servlet = getController(controllerName);
+	    String call = pathNode.getAttributeValue("call");
+	    return new DispacherResult(servlet, call);
+	} else {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return null;
+	}
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean checkQueryString(Element pathNode, Map<String, String> params) {
 
 	Element paramsNode = pathNode.getChild("params");
 
@@ -118,7 +134,7 @@ public class Dispacher {
 
     }
 
-    public boolean checkType(String type, String value) {
+    private boolean checkType(String type, String value) {
 
 	try {
 	    switch (type.toLowerCase()) {
@@ -139,7 +155,10 @@ public class Dispacher {
 
     }
 
-    public IHttpServlet getController(String name) {
+    private IHttpServlet getController(String name) {
+
+	if (name == null)
+	    return null;
 
 	switch (name) {
 	case "pointController":

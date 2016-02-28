@@ -12,7 +12,7 @@ import model.request.HttpRequestMethod;
 import model.request.IHttpRequest;
 import model.response.HeaderResponseField;
 
-public class HttpRequest implements IHttpRequest{
+public class HttpRequest implements IHttpRequest {
 
     private final HttpRequestMethod method;
     private final URL url;
@@ -24,15 +24,17 @@ public class HttpRequest implements IHttpRequest{
     private HttpRequest(HttpRequestMethod method, URL url,
 	    Map<String, String> params, Map<HeaderField, String> headers,
 	    Map<String, String> cookies, String body) {
-	
+
 	super();
 	this.method = method;
 	this.url = url;
 	this.params = (params != null) ? params : new HashMap<String, String>();
-	this.headers = (headers != null) ? headers : new HashMap<HeaderField, String>();
-	this.cookies = (cookies != null) ? cookies : new HashMap<String, String>();
+	this.headers = (headers != null) ? headers
+		: new HashMap<HeaderField, String>();
+	this.cookies = (cookies != null) ? cookies
+		: new HashMap<String, String>();
 	this.body = body;
-	
+
     }
 
     public HttpRequestMethod getMethod() {
@@ -80,8 +82,9 @@ public class HttpRequest implements IHttpRequest{
     }
 
     public static HttpRequest parse(String httpRequest)
-	    throws HttpRequestParseException, MalformedURLException, UnsupportedEncodingException {
-	
+	    throws HttpRequestParseException, MalformedURLException,
+	    UnsupportedEncodingException {
+
 	Map<HeaderField, String> headers = new HashMap<>();
 	Map<String, String> cookies = new HashMap<>();
 	StringBuilder body = new StringBuilder();
@@ -89,15 +92,13 @@ public class HttpRequest implements IHttpRequest{
 
 	String[] lines = httpRequest.split("\n");
 	if (lines.length < 1) {
-	    throw new HttpRequestParseException(
-		    "Error ! Request can't be empty");
+	    throw new HttpRequestParseException("Error ! Request can't be empty");
 	}
 
 	String[] firstLine = lines[0].split(" ");
 
 	if (firstLine.length < 3) {
-	    throw new HttpRequestParseException(
-		    "Error ! Request first line is not correct");
+	    throw new HttpRequestParseException("Error ! Request first line is not correct");
 	}
 
 	HttpRequestMethod method = HttpRequestMethod.valueOf(firstLine[0]);
@@ -117,34 +118,38 @@ public class HttpRequest implements IHttpRequest{
 	    i++;
 	}
 
-	return new HttpRequest(method, url, splitQuery(url), headers, cookies,
-		body.toString());
-	
+	return new HttpRequest(method, url, splitQuery(url), headers, cookies, body.toString());
+
     }
 
     public static Map<String, String> splitQuery(URL url)
 	    throws UnsupportedEncodingException {
-	
+
 	Map<String, String> query_pairs = new HashMap<String, String>();
-	
-	if(url == null || url.getQuery() == null)
+
+	if (url == null || url.getQuery() == null)
 	    return query_pairs;
-	
+
 	String query = url.getQuery();
 	String[] pairs = query.split("&");
 	for (String pair : pairs) {
 	    int idx = pair.indexOf("=");
-	    query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
-		    URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+	    try {
+		query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
+				URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+	    } catch (StringIndexOutOfBoundsException e) {
+		// query string format is not good
+		continue;
+	    }
 	}
-	
+
 	return query_pairs;
-	
+
     }
 
-    private static void parseHeader(String[] lines,
-	    Map<String, String> cookies, Map<HeaderField, String> headers, int i) {
-	
+    private static void parseHeader(String[] lines, Map<String, String> cookies,
+	    Map<HeaderField, String> headers, int i) {
+
 	String[] splitL = lines[i].split(": ");
 	HeaderField key = HeaderRequestField.getField(splitL[0]);
 	String value = splitL[1];
@@ -162,39 +167,38 @@ public class HttpRequest implements IHttpRequest{
 	    value = headers.get(HeaderRequestField.UNKNOWN) + " ; " + value;
 	    headers.put(HeaderRequestField.UNKNOWN, value);
 	}
-	
+
     }
 
     @Override
     public String toString() {
-	
+
 	if (headers.containsKey(HeaderRequestField.ACCEPT)) {
 	    if (headers.get(HeaderRequestField.ACCEPT).startsWith("text/html")) {
 		return this.getHtmlResponse();
-	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith(
-		    "application/json")) {
+	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith("application/json")) {
 		return this.getJsonResponse();
 	    }
 	}
 	return this.getTextResponse();
-	
+
     }
 
     public String getContentType() {
-	
+
 	String contentType = headers.get(HeaderRequestField.ACCEPT);
 
 	if (contentType != null
-		&& (contentType.startsWith("text/html") || contentType
-			.startsWith("application/json"))) {
+		&& (contentType.startsWith("text/html") || 
+			contentType.startsWith("application/json"))) {
 	    return headers.get(HeaderRequestField.ACCEPT);
 	}
 	return "text/plain";
-	
+
     }
 
     public String getTextResponse() {
-	
+
 	if (method == null)
 	    return new String();
 
@@ -202,8 +206,7 @@ public class HttpRequest implements IHttpRequest{
 		+ " / HTTP/1.1\n");
 
 	for (HeaderField field : headers.keySet()) {
-	    textRequest.append(field.getName() + ": " + headers.get(field)
-		    + "\n");
+	    textRequest.append(field.getName() + ": " + headers.get(field) + "\n");
 	}
 
 	if (!cookies.isEmpty()) {
@@ -219,11 +222,11 @@ public class HttpRequest implements IHttpRequest{
 	    textRequest.append(body);
 
 	return textRequest.toString();
-	
+
     }
 
     public String getHtmlResponse() {
-	
+
 	StringBuilder htmlRequest = new StringBuilder(
 		"<!DOCTYPE html>\n<html>\n"
 			+ "<head> \n<meta charset=\""
@@ -233,10 +236,11 @@ public class HttpRequest implements IHttpRequest{
 
 	if (method != null) {
 	    htmlRequest
-		    .append("<table rules=\"all\" style=\"width:100%; border:solid 1px black;\">"
-			    + "<caption>"
-			    + method.name()
-			    + " / HTTP/1.1</caption>\n");
+		    .append("<table rules=\"all\" style=\"width:100%; "
+		    	    	+ "border:solid 1px black;\">"
+		    	    	+ "<caption>"
+		    	    	+ method.name()
+		    	    	+ " / HTTP/1.1</caption>\n");
 
 	    for (HeaderField field : headers.keySet()) {
 		if (field.equals(HeaderResponseField.CONTENT_TYPE))
@@ -266,11 +270,11 @@ public class HttpRequest implements IHttpRequest{
 
 	htmlRequest.append("</body>\n</html>");
 	return htmlRequest.toString();
-	
+
     }
 
     public String getJsonResponse() {
-	
+
 	StringBuilder jsonRequest = new StringBuilder("{");
 	if (method != null) {
 	    jsonRequest.append("\"response\" : \"" + method.name()
@@ -285,8 +289,7 @@ public class HttpRequest implements IHttpRequest{
 	    }
 
 	    for (String name : cookies.keySet()) {
-		jsonRequest.append(" \"" + name + "=" + cookies.get(name)
-			+ "\",\n");
+		jsonRequest.append(" \"" + name + "=" + cookies.get(name) + "\",\n");
 	    }
 
 	    if (body != null)
@@ -294,7 +297,7 @@ public class HttpRequest implements IHttpRequest{
 	}
 	jsonRequest.append("}");
 	return jsonRequest.toString();
-	
+
     }
 
 }

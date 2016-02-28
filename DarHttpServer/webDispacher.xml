@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application name="point">
 	<controller name="pointController">
-		<path value="/list" method="GET" call="getPointList" />
-		<path value="/\d" method="GET" call="getPoint" />
-		<path value="/\d/x" method="GET" call="getX" />
-		<path value="/\d/x" method="GET" call="getY" />
-		<path value="/\d" method="PUT" call="modifyPoint">
+		<path value="/list/*" method="GET" call="getPointList" />
+		<path value="/\d+/*" method="GET" call="getPoint" />
+		<path value="/\d+/x/*" method="GET" call="getX" />
+		<path value="/\d+/y/*" method="GET" call="getY" />
+		<path value="/\d+/*" method="PUT" call="modifyPoint">
 			<params>
 				<param type="int" name="x" required="true" />
 				<param type="int" name="y" required="true" />
 			</params>
 		</path>
-		<path value="/" method="POST" call="addPoint" />
-		<path value="/\d" method="DELETE" call="deletePoint" />
+		<path value="/*" method="POST" call="addPoint" />
+		<path value="/\d+/*" method="DELETE" call="deletePoint" />
 	</controller>
 </application>

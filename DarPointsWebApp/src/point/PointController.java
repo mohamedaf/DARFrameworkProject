@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Map;
 
 import model.request.IHttpRequest;
+import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
 
@@ -13,39 +14,26 @@ public class PointController implements IHttpServlet {
 
     private Points points = new Points();
 
-    private void setHttpResponseError(IHttpResponse resp, HttpResponseStatus status) {
-	
-	resp.setStatus(status);
-	resp.setBody("Error " + status.getStatus() + " " + status.name());
-	
-    }
-
     @Override
     public void doGet(IHttpRequest req, IHttpResponse resp, String call) {
 	
 	switch (call.toLowerCase()) {
-	case "getPointList":
+	case "getpointlist":
 	    getPointList(resp);
-	    break;
-	case "getPoint":
+	case "getpoint":
 	    getPoint(req, resp);
-	    break;
-	case "getX":
+	case "getx":
 	    getPointCoord(req, resp, "x");
-	case "getY":
+	case "gety":
 	    getPointCoord(req, resp, "y");
 	default:
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
-	    break;
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
     }
 
     private void getPointList(IHttpResponse resp) {
-	
 	resp.setBody(points.toString());
-	resp.setContentLength(points.toString().length());
-	
     }
 
     private void getPoint(IHttpRequest req, IHttpResponse resp) {
@@ -54,10 +42,9 @@ public class PointController implements IHttpServlet {
 	Point p = points.getPoint(ind);
 	
 	if (p == null) {
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	} else {
 	    resp.setBody(p.toString());
-	    resp.setContentLength(p.toString().length());
 	}
 	
     }
@@ -69,14 +56,103 @@ public class PointController implements IHttpServlet {
 	if (coord.equalsIgnoreCase("x")) {
 	    String body = "x = " + p.getX();
 	    resp.setBody(body);
-	    resp.setContentLength(body.length());
 	} else if (coord.equalsIgnoreCase("y")) {
 	    String body = "y = " + p.getY();
 	    resp.setBody(body);
-	    resp.setContentLength(body.length());
 	} else {
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
+	
+    }
+
+    @Override
+    public void doPut(IHttpRequest req, IHttpResponse resp, String call) {
+	
+	switch (call.toLowerCase()) {
+	case "modifypoint":
+	    modifyPoint(req, resp);
+	default:
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	}
+	
+    }
+
+    private void modifyPoint(IHttpRequest req, IHttpResponse resp) {
+	
+	int ind = getInd(req);
+	Point p = points.getPoint(ind);
+	
+	if (p == null) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	} else {
+	    Map<String, String> params = req.getParams();
+	    p.setX(Integer.parseInt(params.get("x")));
+	    p.setY(Integer.parseInt(params.get("y")));
+	    String body = "This point has been modified, new value :" + p.toString();
+	    resp.setBody(body);
+	}
+	
+    }
+
+    @Override
+    public void doPost(IHttpRequest req, IHttpResponse resp, String call) {
+	
+	switch (call.toLowerCase()) {
+	case "addpoint":
+	    addPoint(req, resp);
+	default:
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	}
+
+    }
+
+    public void addPoint(IHttpRequest req, IHttpResponse resp) {
+	
+	if (req.getBody().isEmpty()) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	}
+	
+	String[] coords = req.getBody().split("&");
+	
+	if (coords.length < 2) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	}
+
+	String[] coordX = coords[0].split("=");
+	String[] coordY = coords[1].split("=");
+	
+	try {
+	    int x = Integer.parseInt(coordX[1]);
+	    int y = Integer.parseInt(coordY[1]);
+	    Point p = points.addPoint(x, y);
+	    String body = "new Point created : " + p.toString();
+	    resp.setBody(body);
+	} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	}
+	
+    }
+
+    @Override
+    public void doDelete(IHttpRequest req, IHttpResponse resp, String call) {
+	
+	switch (call.toLowerCase()) {
+	case "deletepoint":
+	    deletePoint(req, resp);
+	default:
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	}
+	
+    }
+
+    private void deletePoint(IHttpRequest req, IHttpResponse resp) {
+	
+	String body = "Point : " + points.getPoints().toString() + " was removed";
+	int ind = getInd(req);
+	points.getPoints().remove(ind);
+	resp.setBody(body);
 	
     }
     
@@ -88,102 +164,7 @@ public class PointController implements IHttpServlet {
 	return Integer.parseInt(splittedPath[1]);
 	
     }
-
-    @Override
-    public void doPut(IHttpRequest req, IHttpResponse resp, String call) {
-	
-	switch (call.toLowerCase()) {
-	case "modifyPoint":
-	    modifyPoint(req, resp);
-	    break;
-	default:
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
-	    break;
-	}
-	
-    }
-
-    private void modifyPoint(IHttpRequest req, IHttpResponse resp) {
-	
-	int ind = getInd(req);
-	Point p = points.getPoint(ind);
-	
-	if (p == null) {
-	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
-	} else {
-	    Map<String, String> params = req.getParams();
-	    p.setX(Integer.parseInt(params.get("x")));
-	    p.setY(Integer.parseInt(params.get("y")));
-	    String body = "The point has been modified, new value :" + p.toString();
-	    resp.setBody(body);
-	    resp.setContentLength(body.length());
-	}
-	
-    }
-
-    @Override
-    public void doPost(IHttpRequest req, IHttpResponse resp, String call) {
-	
-	switch (call.toLowerCase()) {
-	case "addPoint":
-	    addPoint(req, resp);
-	    break;
-	default:
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
-	    break;
-	}
-
-    }
-
-    public void addPoint(IHttpRequest req, IHttpResponse resp) {
-	
-	if (req.getBody().isEmpty()) {
-	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
-	    return;
-	}
-	
-	String[] coords = req.getBody().split("&");
-	
-	if (coords.length < 2) {
-	    setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
-	    return;
-	}
-
-	String[] coordX = coords[0].split("=");
-	String[] coordY = coords[1].split("=");
-	int x = Integer.parseInt(coordX[1]);
-	int y = Integer.parseInt(coordY[1]);
-	Point p = points.addPoint(x, y);
-	String body = "new Point created : " + p.toString();
-	resp.setBody(body);
-	resp.setContentLength(body.length());
-	
-    }
-
-    @Override
-    public void doDelete(IHttpRequest req, IHttpResponse resp, String call) {
-	
-	switch (call.toLowerCase()) {
-	case "deletePoint":
-	    deletePoint(req, resp);
-	    break;
-	default:
-	    setHttpResponseError(resp, HttpResponseStatus.Not_Found);
-	    break;
-	}
-	
-    }
-
-    private void deletePoint(IHttpRequest req, IHttpResponse resp) {
-	
-	String body = points.getPoints().toString() + " Removed";
-	int ind = getInd(req);
-	points.getPoints().remove(ind);
-	resp.setBody(body);
-	resp.setContentLength(body.length());
-	
-    }
-
+    
     public String toString() {
 	return points.toString();
     }

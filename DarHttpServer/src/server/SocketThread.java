@@ -1,33 +1,37 @@
 package server;
 
+import httpServlet.IHttpServlet;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.CharBuffer;
+import java.util.Map;
 
 import model.HttpRequest;
 import model.HttpResponse;
 import model.request.HttpRequestMethod;
+import model.request.IHttpRequest;
+import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
-import point.PointController;
+import model.response.IHttpResponse;
 import dispacher.Dispacher;
+import dispacher.DispacherResult;
 
 public class SocketThread extends Thread {
 
-    private static PointController pointController;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private final Dispacher dispacher;
+    private final Socket socket;
 
     public SocketThread(Socket socket, Dispacher dispacher) {
 
 	super();
 	System.out.println("new Socket Thread");
-	if (SocketThread.pointController == null) {
-	    SocketThread.pointController = new PointController();
-	}
 
 	try {
 	    bufferedReader = new BufferedReader(new InputStreamReader(
@@ -37,7 +41,8 @@ public class SocketThread extends Thread {
 	    e.printStackTrace();
 	}
 	this.dispacher = dispacher;
-	
+	this.socket = socket;
+
     }
 
     @Override
@@ -45,15 +50,14 @@ public class SocketThread extends Thread {
 
 	super.run();
 	try {
-	    HttpRequest req;
-	    HttpResponse resp;
+	    IHttpRequest req;
+	    IHttpResponse resp;
 	    String request = readRequest();
-	    System.out.println(request);
 
 	    if (request.length() > 0) {
 		req = HttpRequest.parse(request);
 		resp = new HttpResponse(HttpResponseStatus.OK, req);
-		pointControllerDispacher(req, resp);
+		dispacher(req, resp);
 	    } else {
 		resp = new HttpResponse(HttpResponseStatus.Bad_Request,
 			"text/plain", "Error 400 Bad Request");
@@ -62,6 +66,7 @@ public class SocketThread extends Thread {
 	    printWriter.write(resp.toString());
 	    printWriter.flush();
 	    printWriter.flush();
+	    socket.close();
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
@@ -79,8 +84,8 @@ public class SocketThread extends Thread {
 		s = bufferedReader.readLine();
 		res.append(s + "\n");
 		if (s.startsWith("Content-Length: ")) {
-		    contentLength = Integer.parseInt(s.substring(
-			    "Content-Length: ".length(), s.length()));
+		    contentLength = Integer.parseInt(
+			    s.substring("Content-Length: ".length(), s.length()));
 		}
 		if (s.isEmpty()) {
 		    if (contentLength != -1) {
@@ -98,16 +103,48 @@ public class SocketThread extends Thread {
 
     }
 
-    private void pointControllerDispacher(HttpRequest req, HttpResponse resp) {
+    private void dispacher(IHttpRequest req, IHttpResponse resp) {
+	URL url = req.getUrl();
+	String host = url.getHost();
+	String path = url.getPath();
+	Map<String, String> params = req.getParams();
+
+	if (host.isEmpty() || !dispacher.isValidApplication(host)) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    return;
+	}
+	
+	DispacherResult result = dispacher.isValidPath(resp, req.getMethod(),
+		path, params);
+
+	if (result == null) {
+	    // The error type was added by the dispacher
+	    return;
+	}
+
+	IHttpServlet servlet = result.getServlet();
+	String call = result.getCall();
+
+	if (servlet == null || call == null) {
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    return;
+	}
+
+	controllerDispacher(servlet, req, resp, call);
+
+    }
+
+    private void controllerDispacher(IHttpServlet servlet, IHttpRequest req,
+	    IHttpResponse resp, String call) {
 
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
-	    pointController.doGet(req, resp, null);
+	    servlet.doGet(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.POST)) {
-	    pointController.doPost(req, resp, null);
+	    servlet.doPost(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.PUT)) {
-	    pointController.doPut(req, resp, null);
+	    servlet.doPut(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.DELETE)) {
-	    pointController.doDelete(req, resp, null);
+	    servlet.doDelete(req, resp, call);
 	}
 
     }

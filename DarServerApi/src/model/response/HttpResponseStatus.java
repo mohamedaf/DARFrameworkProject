@@ -1,6 +1,7 @@
 package model.response;
 
 public enum HttpResponseStatus {
+    
     OK("200"),
     Created("201"),
     Accepted("202"),
