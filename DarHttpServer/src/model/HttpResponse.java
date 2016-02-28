@@ -10,8 +10,12 @@ import model.response.HeaderResponseField;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HttpResponse implements IHttpResponse {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpResponse.class);
     private HttpResponseStatus status;
     private final Map<HeaderField, String> headers;
     private final Map<String, String> cookies;
@@ -41,15 +45,14 @@ public class HttpResponse implements IHttpResponse {
     }
 
     private void initHeaders(String contentType) {
-
+	LOGGER.info("Initiating first http response headers");
+	
 	Date date = new Date();
 	SimpleDateFormat form = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
 	headers.put(HeaderResponseField.DATE, form.format(date));
-	headers.put(HeaderResponseField.SERVER,
-		"Apache/1.3.3.7 (Unix) (Red-Hat/Linux)");
+	headers.put(HeaderResponseField.SERVER, "Macbook de Mohamed Amin");
 	headers.put(HeaderResponseField.CONTENT_ENCODING, "UTF-8");
-	headers.put(HeaderResponseField.CONTENT_LENGTH,
-		String.valueOf(body.length()));
+	headers.put(HeaderResponseField.CONTENT_LENGTH, String.valueOf(body.length()));
 	headers.put(HeaderResponseField.CONTENT_TYPE, contentType);
 
     }

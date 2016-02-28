@@ -15,9 +15,12 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Dispacher {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Dispacher.class);
     private Document document = null;
 
     public Dispacher(Document document) {
@@ -29,7 +32,8 @@ public class Dispacher {
 
     @SuppressWarnings("rawtypes")
     public boolean isValidApplication(String name) {
-
+	LOGGER.info("Verifying if the host correspond to an valid application");
+	
 	Element rootNode = document.getRootElement();
 	Element currentNode = null;
 	String applicationName = null;
@@ -44,12 +48,9 @@ public class Dispacher {
 		if (applicationName != null && applicationName.equalsIgnoreCase(name))
 		    return true;
 	    }
-
 	} catch (JDOMException e) {
-	    System.out.println("Erreur JDOM " + e.getMessage());
-	    e.printStackTrace();
+	    LOGGER.error("Erreur JDOM ", e);
 	}
-
 	return false;
 
     }
@@ -57,6 +58,7 @@ public class Dispacher {
     @SuppressWarnings("rawtypes")
     public DispacherResult isValidPath(IHttpResponse resp,
 	    HttpRequestMethod method, String path, Map<String, String> params) {
+	LOGGER.info("Verifying if the path is valid");
 
 	Element rootNode = document.getRootElement();
 	Element pathNode = null;
@@ -76,12 +78,11 @@ public class Dispacher {
 		    return checkPathNode(resp, pathNode, params);
 		}
 	    }
-
 	} catch (JDOMException e) {
-	    System.out.println("Erreur JDOM " + e.getMessage());
-	    e.printStackTrace();
+	    LOGGER.error("Erreur JDOM ", e);
 	}
 
+	LOGGER.warn("Http Not found");
 	HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	return null;
 
@@ -89,6 +90,7 @@ public class Dispacher {
 
     private DispacherResult checkPathNode(IHttpResponse resp, Element pathNode,
 	    Map<String, String> params) {
+	LOGGER.info("Checking path node");
 
 	if (checkQueryString(pathNode, params)) {
 	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
@@ -96,6 +98,7 @@ public class Dispacher {
 	    String call = pathNode.getAttributeValue("call");
 	    return new DispacherResult(servlet, call);
 	} else {
+	    LOGGER.warn("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return null;
 	}
@@ -104,9 +107,9 @@ public class Dispacher {
 
     @SuppressWarnings("unchecked")
     private boolean checkQueryString(Element pathNode, Map<String, String> params) {
+	LOGGER.info("Checking query string");
 
 	Element paramsNode = pathNode.getChild("params");
-
 	if (paramsNode == null)
 	    return true;
 
@@ -135,6 +138,7 @@ public class Dispacher {
     }
 
     private boolean checkType(String type, String value) {
+	LOGGER.info("Checking param type");
 
 	try {
 	    switch (type.toLowerCase()) {
@@ -162,8 +166,10 @@ public class Dispacher {
 
 	switch (name) {
 	case "pointController":
+	    LOGGER.info("Getting pointController");
 	    return ControllerFactory.getPointController();
 	default:
+	    LOGGER.warn("No corresponding controller found");
 	    return null;
 	}
 

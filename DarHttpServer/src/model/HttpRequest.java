@@ -12,8 +12,12 @@ import model.request.HttpRequestMethod;
 import model.request.IHttpRequest;
 import model.response.HeaderResponseField;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HttpRequest implements IHttpRequest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequest.class);
     private final HttpRequestMethod method;
     private final URL url;
     private final Map<String, String> params;
@@ -29,10 +33,8 @@ public class HttpRequest implements IHttpRequest {
 	this.method = method;
 	this.url = url;
 	this.params = (params != null) ? params : new HashMap<String, String>();
-	this.headers = (headers != null) ? headers
-		: new HashMap<HeaderField, String>();
-	this.cookies = (cookies != null) ? cookies
-		: new HashMap<String, String>();
+	this.headers = (headers != null) ? headers : new HashMap<HeaderField, String>();
+	this.cookies = (cookies != null) ? cookies : new HashMap<String, String>();
 	this.body = body;
 
     }
@@ -82,28 +84,31 @@ public class HttpRequest implements IHttpRequest {
     }
 
     public static HttpRequest parse(String httpRequest)
-	    throws HttpRequestParseException, MalformedURLException,
-	    UnsupportedEncodingException {
-
-	Map<HeaderField, String> headers = new HashMap<>();
-	Map<String, String> cookies = new HashMap<>();
+	    throws HttpRequestParseException, MalformedURLException, UnsupportedEncodingException {
+	LOGGER.info("HTTP request parsing");
+	
+	Map<HeaderField, String> headers = new HashMap<HeaderField, String>();
+	Map<String, String> cookies = new HashMap<String, String>();
 	StringBuilder body = new StringBuilder();
 	int i = 1;
 
 	String[] lines = httpRequest.split("\n");
 	if (lines.length < 1) {
+	    LOGGER.warn("Error ! Request can't be empty");
 	    throw new HttpRequestParseException("Error ! Request can't be empty");
 	}
 
 	String[] firstLine = lines[0].split(" ");
 
 	if (firstLine.length < 3) {
+	    LOGGER.warn("Error ! Request first line is not correct");
 	    throw new HttpRequestParseException("Error ! Request first line is not correct");
 	}
 
 	HttpRequestMethod method = HttpRequestMethod.valueOf(firstLine[0]);
 	URL url = new URL("http:/" + firstLine[1]);
 
+	LOGGER.info("Parsing header ");
 	while (i < lines.length) {
 	    if (lines[i].length() > 0) {
 		parseHeader(lines, cookies, headers, i);
@@ -122,9 +127,9 @@ public class HttpRequest implements IHttpRequest {
 
     }
 
-    public static Map<String, String> splitQuery(URL url)
-	    throws UnsupportedEncodingException {
-
+    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+	LOGGER.info("Splitting http request query");
+	
 	Map<String, String> query_pairs = new HashMap<String, String>();
 
 	if (url == null || url.getQuery() == null)
@@ -138,7 +143,7 @@ public class HttpRequest implements IHttpRequest {
 		query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
 				URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 	    } catch (StringIndexOutOfBoundsException e) {
-		// query string format is not good
+		LOGGER.warn("Query string format is not good");
 		continue;
 	    }
 	}
@@ -149,7 +154,7 @@ public class HttpRequest implements IHttpRequest {
 
     private static void parseHeader(String[] lines, Map<String, String> cookies,
 	    Map<HeaderField, String> headers, int i) {
-
+	
 	String[] splitL = lines[i].split(": ");
 	HeaderField key = HeaderRequestField.getField(splitL[0]);
 	String value = splitL[1];
@@ -175,11 +180,14 @@ public class HttpRequest implements IHttpRequest {
 
 	if (headers.containsKey(HeaderRequestField.ACCEPT)) {
 	    if (headers.get(HeaderRequestField.ACCEPT).startsWith("text/html")) {
+		LOGGER.info("building text/html request echo");
 		return this.getHtmlResponse();
 	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith("application/json")) {
+		LOGGER.info("building application/json request echo");
 		return this.getJsonResponse();
 	    }
 	}
+	LOGGER.info("building text/plain request echo");
 	return this.getTextResponse();
 
     }

@@ -10,8 +10,12 @@ import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PointController implements IHttpServlet {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PointController.class);
     private Points points = new Points();
 
     @Override
@@ -20,46 +24,59 @@ public class PointController implements IHttpServlet {
 	switch (call.toLowerCase()) {
 	case "getpointlist":
 	    getPointList(resp);
+	    break;
 	case "getpoint":
 	    getPoint(req, resp);
+	    break;
 	case "getx":
 	    getPointCoord(req, resp, "x");
+	    break;
 	case "gety":
 	    getPointCoord(req, resp, "y");
+	    break;
 	default:
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
     }
 
     private void getPointList(IHttpResponse resp) {
+	LOGGER.info("GET getPointList");
 	resp.setBody(points.toString());
+	LOGGER.info(points.toString());
     }
 
     private void getPoint(IHttpRequest req, IHttpResponse resp) {
-	
+	LOGGER.info("GET getPoint");
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
 	
 	if (p == null) {
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	} else {
 	    resp.setBody(p.toString());
+	    LOGGER.info(p.toString());
 	}
 	
     }
 
     private void getPointCoord(IHttpRequest req, IHttpResponse resp, String coord) {
+	LOGGER.info("GET getPointCoord {}", coord);
 	
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
 	if (coord.equalsIgnoreCase("x")) {
 	    String body = "x = " + p.getX();
 	    resp.setBody(body);
+	    LOGGER.info(body);
 	} else if (coord.equalsIgnoreCase("y")) {
 	    String body = "y = " + p.getY();
 	    resp.setBody(body);
+	    LOGGER.info(body);
 	} else {
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
@@ -71,18 +88,22 @@ public class PointController implements IHttpServlet {
 	switch (call.toLowerCase()) {
 	case "modifypoint":
 	    modifyPoint(req, resp);
+	    break;
 	default:
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
     }
 
     private void modifyPoint(IHttpRequest req, IHttpResponse resp) {
+	LOGGER.info("PUT modify point");
 	
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
 	
 	if (p == null) {
+	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	} else {
 	    Map<String, String> params = req.getParams();
@@ -90,6 +111,7 @@ public class PointController implements IHttpServlet {
 	    p.setY(Integer.parseInt(params.get("y")));
 	    String body = "This point has been modified, new value :" + p.toString();
 	    resp.setBody(body);
+	    LOGGER.info(body);
 	}
 	
     }
@@ -100,13 +122,16 @@ public class PointController implements IHttpServlet {
 	switch (call.toLowerCase()) {
 	case "addpoint":
 	    addPoint(req, resp);
+	    break;
 	default:
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 
     }
 
     public void addPoint(IHttpRequest req, IHttpResponse resp) {
+	LOGGER.info("POST addPoint");
 	
 	if (req.getBody().isEmpty()) {
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
@@ -129,7 +154,9 @@ public class PointController implements IHttpServlet {
 	    Point p = points.addPoint(x, y);
 	    String body = "new Point created : " + p.toString();
 	    resp.setBody(body);
+	    LOGGER.info(body);
 	} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	}
 	
@@ -141,18 +168,22 @@ public class PointController implements IHttpServlet {
 	switch (call.toLowerCase()) {
 	case "deletepoint":
 	    deletePoint(req, resp);
+	    break;
 	default:
+	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
     }
 
     private void deletePoint(IHttpRequest req, IHttpResponse resp) {
+	LOGGER.info("DELETE deletePoint");
 	
 	String body = "Point : " + points.getPoints().toString() + " was removed";
 	int ind = getInd(req);
 	points.getPoints().remove(ind);
 	resp.setBody(body);
+	LOGGER.info(body);
 	
     }
     

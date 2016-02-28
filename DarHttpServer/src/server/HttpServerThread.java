@@ -3,10 +3,14 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dispacher.Dispacher;
 
 public class HttpServerThread extends Thread {
     
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerThread.class);
     private final ServerSocket welcomeSocket;
     private final Dispacher dispacher;
     private boolean run;
@@ -27,11 +31,11 @@ public class HttpServerThread extends Thread {
 	try {
 	    while (run) {
 		new SocketThread(welcomeSocket.accept(), dispacher).start();
-		System.out.println("New connection");
+		LOGGER.info("New connection");
 	    }
 	    welcomeSocket.close();
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    LOGGER.error("", e);
 	    stopThread();
 	}
 

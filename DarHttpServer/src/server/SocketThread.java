@@ -18,11 +18,16 @@ import model.request.IHttpRequest;
 import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dispacher.Dispacher;
 import dispacher.DispacherResult;
 
 public class SocketThread extends Thread {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketThread.class);
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private final Dispacher dispacher;
@@ -31,14 +36,14 @@ public class SocketThread extends Thread {
     public SocketThread(Socket socket, Dispacher dispacher) {
 
 	super();
-	System.out.println("new Socket Thread");
+	LOGGER.info("new Socket Thread");
 
 	try {
-	    bufferedReader = new BufferedReader(new InputStreamReader(
-		    socket.getInputStream()));
+	    bufferedReader = new BufferedReader(
+		    new InputStreamReader(socket.getInputStream()));
 	    printWriter = new PrintWriter(socket.getOutputStream());
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    LOGGER.error("", e);
 	}
 	this.dispacher = dispacher;
 	this.socket = socket;
@@ -63,18 +68,20 @@ public class SocketThread extends Thread {
 			"text/plain", "Error 400 Bad Request");
 	    }
 
+	    LOGGER.info("Sending http response");
 	    printWriter.write(resp.toString());
 	    printWriter.flush();
 	    printWriter.flush();
 	    socket.close();
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    LOGGER.error("", e);
 	}
 
     }
 
     private String readRequest() {
-
+	LOGGER.info("Reading http request");
+	
 	String s;
 	StringBuilder res = new StringBuilder();
 	int contentLength = -1;
@@ -104,12 +111,15 @@ public class SocketThread extends Thread {
     }
 
     private void dispacher(IHttpRequest req, IHttpResponse resp) {
+	LOGGER.info("Dispacher");
+	
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
 	Map<String, String> params = req.getParams();
 
 	if (host.isEmpty() || !dispacher.isValidApplication(host)) {
+	    LOGGER.warn("Incorrect application name, Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
@@ -118,7 +128,6 @@ public class SocketThread extends Thread {
 		path, params);
 
 	if (result == null) {
-	    // The error type was added by the dispacher
 	    return;
 	}
 
@@ -126,6 +135,7 @@ public class SocketThread extends Thread {
 	String call = result.getCall();
 
 	if (servlet == null || call == null) {
+	    LOGGER.warn("Server or call is null, Http not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
@@ -136,7 +146,8 @@ public class SocketThread extends Thread {
 
     private void controllerDispacher(IHttpServlet servlet, IHttpRequest req,
 	    IHttpResponse resp, String call) {
-
+	LOGGER.info("Controller dispacher, method : {}, call : {}", req.getMethod(), call);
+	
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
 	    servlet.doGet(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.POST)) {
