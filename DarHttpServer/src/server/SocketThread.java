@@ -12,14 +12,16 @@ import model.HttpResponse;
 import model.request.HttpRequestMethod;
 import model.response.HttpResponseStatus;
 import point.PointController;
+import dispacher.Dispacher;
 
 public class SocketThread extends Thread {
 
     private static PointController pointController;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
+    private final Dispacher dispacher;
 
-    public SocketThread(Socket socket) {
+    public SocketThread(Socket socket, Dispacher dispacher) {
 
 	super();
 	System.out.println("new Socket Thread");
@@ -34,7 +36,8 @@ public class SocketThread extends Thread {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-
+	this.dispacher = dispacher;
+	
     }
 
     @Override
@@ -98,13 +101,13 @@ public class SocketThread extends Thread {
     private void pointControllerDispacher(HttpRequest req, HttpResponse resp) {
 
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
-	    pointController.doGet(req, resp);
+	    pointController.doGet(req, resp, null);
 	} else if (req.getMethod().equals(HttpRequestMethod.POST)) {
-	    pointController.doPost(req, resp);
+	    pointController.doPost(req, resp, null);
 	} else if (req.getMethod().equals(HttpRequestMethod.PUT)) {
-	    pointController.doPut(req, resp);
+	    pointController.doPut(req, resp, null);
 	} else if (req.getMethod().equals(HttpRequestMethod.DELETE)) {
-	    pointController.doDelete(req, resp);
+	    pointController.doDelete(req, resp, null);
 	}
 
     }

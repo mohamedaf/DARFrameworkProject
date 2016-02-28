@@ -3,16 +3,20 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import dispacher.Dispacher;
+
 public class HttpServerThread extends Thread {
     
     private final ServerSocket welcomeSocket;
+    private final Dispacher dispacher;
     private boolean run;
 
-    public HttpServerThread() throws IOException {
+    public HttpServerThread(Dispacher dispacher) throws IOException {
 	
 	super();
 	run = true;
 	this.welcomeSocket = new ServerSocket(1024);
+	this.dispacher = dispacher;
 	
     }
 
@@ -22,7 +26,7 @@ public class HttpServerThread extends Thread {
 	super.run();
 	try {
 	    while (run) {
-		new SocketThread(welcomeSocket.accept()).start();
+		new SocketThread(welcomeSocket.accept(), dispacher).start();
 		System.out.println("New connection");
 	    }
 	    welcomeSocket.close();
