@@ -1,4 +1,4 @@
-package dispacher;
+package dispatcher;
 
 import httpServlet.IHttpServlet;
 
@@ -18,12 +18,12 @@ import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Dispacher {
+public class Dispatcher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Dispacher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Dispatcher.class);
     private Document document = null;
 
-    public Dispacher(Document document) {
+    public Dispatcher(Document document) {
 
 	super();
 	this.document = document;
@@ -56,7 +56,7 @@ public class Dispacher {
     }
 
     @SuppressWarnings("rawtypes")
-    public DispacherResult isValidPath(IHttpResponse resp,
+    public DispatcherResult isValidPath(IHttpResponse resp,
 	    HttpRequestMethod method, String path, Map<String, String> params) {
 	LOGGER.info("Verifying if the path is valid");
 
@@ -88,7 +88,7 @@ public class Dispacher {
 
     }
 
-    private DispacherResult checkPathNode(IHttpResponse resp, Element pathNode,
+    private DispatcherResult checkPathNode(IHttpResponse resp, Element pathNode,
 	    Map<String, String> params) {
 	LOGGER.info("Checking path node");
 
@@ -96,7 +96,7 @@ public class Dispacher {
 	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
 	    IHttpServlet servlet = getController(controllerName);
 	    String call = pathNode.getAttributeValue("call");
-	    return new DispacherResult(servlet, call);
+	    return new DispatcherResult(servlet, call);
 	} else {
 	    LOGGER.warn("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
@@ -147,6 +147,9 @@ public class Dispacher {
 		return true;
 	    case "double":
 		Double.parseDouble(value);
+		return true;
+	    case "boolean":
+		Boolean.parseBoolean(value);
 		return true;
 	    case "string":
 		return true;

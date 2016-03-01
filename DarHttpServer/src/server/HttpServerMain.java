@@ -3,13 +3,15 @@ package server;
 import java.io.File;
 import java.io.IOException;
 
+import model.HttpSessionProvider;
+
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dispacher.Dispacher;
+import dispatcher.Dispatcher;
 
 public class HttpServerMain {
 
@@ -21,16 +23,17 @@ public class HttpServerMain {
 	HttpServerThread hsm = null;
 
 	try {
-	    File file = new File("wesbDispacher.xml");
+	    File file = new File("webDispatcher.xml");
 	    SAXBuilder sxb = new SAXBuilder();
 	    Document document = sxb.build(file);
-	    Dispacher dispacher = new Dispacher(document);
-	    hsm = new HttpServerThread(dispacher);
+	    Dispatcher dispatcher = new Dispatcher(document);
+	    HttpSessionProvider sessionProvider = new HttpSessionProvider();
+	    hsm = new HttpServerThread(dispatcher, sessionProvider);
 	    hsm.start();
 	} catch (IOException e) {
 	    if (hsm != null)
 		hsm.stopThread();
-	    LOGGER.error("Erreur lors de la lecture du webDispacher ", e);
+	    LOGGER.error("Erreur lors de la lecture du webDispatcher ", e);
 	} catch (JDOMException e) {
 	    LOGGER.error("Erreur lors de la construction du fichier JDOM ", e);
 	}

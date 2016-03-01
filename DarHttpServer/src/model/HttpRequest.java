@@ -23,11 +23,12 @@ public class HttpRequest implements IHttpRequest {
     private final Map<String, String> params;
     private final Map<HeaderField, String> headers;
     private final Map<String, String> cookies;
+    private final HttpSessionProvider sessionProvider;
     private final String body;
 
     private HttpRequest(HttpRequestMethod method, URL url,
 	    Map<String, String> params, Map<HeaderField, String> headers,
-	    Map<String, String> cookies, String body) {
+	    Map<String, String> cookies, HttpSessionProvider sessionProvider, String body) {
 
 	super();
 	this.method = method;
@@ -35,6 +36,7 @@ public class HttpRequest implements IHttpRequest {
 	this.params = (params != null) ? params : new HashMap<String, String>();
 	this.headers = (headers != null) ? headers : new HashMap<HeaderField, String>();
 	this.cookies = (cookies != null) ? cookies : new HashMap<String, String>();
+	this.sessionProvider = sessionProvider;
 	this.body = body;
 
     }
@@ -79,11 +81,15 @@ public class HttpRequest implements IHttpRequest {
 	return cookies.get(key);
     }
 
+    public HttpSessionProvider getSessionProvider() {
+        return sessionProvider;
+    }
+
     public String getBody() {
 	return body;
     }
 
-    public static HttpRequest parse(String httpRequest)
+    public static HttpRequest parse(String httpRequest, HttpSessionProvider sessionProvider)
 	    throws HttpRequestParseException, MalformedURLException, UnsupportedEncodingException {
 	LOGGER.info("HTTP request parsing");
 	
@@ -123,7 +129,8 @@ public class HttpRequest implements IHttpRequest {
 	    i++;
 	}
 
-	return new HttpRequest(method, url, splitQuery(url), headers, cookies, body.toString());
+	return new HttpRequest(method, url, splitQuery(url), headers, cookies, 
+		sessionProvider, body.toString());
 
     }
 
@@ -161,7 +168,7 @@ public class HttpRequest implements IHttpRequest {
 
 	if (key == HeaderRequestField.COOKIE) {
 	    for (String s : value.split(";")) {
-		String[] cookiePair = s.split(":");
+		String[] cookiePair = s.split("=");
 		cookies.put(cookiePair[0], cookiePair[1]);
 	    }
 	} else if (key != null) {
@@ -224,6 +231,7 @@ public class HttpRequest implements IHttpRequest {
 	for (String name : cookies.keySet()) {
 	    textRequest.append(" " + name + "=" + cookies.get(name) + ";");
 	}
+	textRequest = textRequest.delete(textRequest.length()-1, textRequest.length());
 
 	textRequest.append("\n\n");
 	if (body != null)

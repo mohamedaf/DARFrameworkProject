@@ -1,4 +1,4 @@
-package dispacher;
+package dispatcher;
 
 import httpServlet.IHttpServlet;
 import point.PointController;

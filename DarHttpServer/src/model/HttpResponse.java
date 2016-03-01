@@ -1,5 +1,7 @@
 package model;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,8 +83,14 @@ public class HttpResponse implements IHttpResponse {
 	return cookies.containsKey(key);
     }
 
-    public String addCookie(String key, String value) {
-	return cookies.put(key, value);
+    public void addCookie(String key, String value) {
+	try {
+	    String safeCookieName = URLEncoder.encode(key, "UTF-8");
+	    String safeCookieValue = URLEncoder.encode(value, "UTF-8");
+	    cookies.put(safeCookieName, safeCookieValue);
+	} catch (UnsupportedEncodingException e) {
+	    LOGGER.error("Error while adding new cookie {}", e);
+	}
     }
 
     public String getCookie(String key) {
@@ -116,10 +124,11 @@ public class HttpResponse implements IHttpResponse {
 	}
 
 	if (!cookies.isEmpty()) {
-	    response.append("Cookie:");
+	    response.append("Set-Cookie:");
 	    for (String name : cookies.keySet()) {
 		response.append(" " + name + "=" + cookies.get(name) + ";");
 	    }
+	    response = response.delete(response.length()-1, response.length());
 	    response.append("\n");
 	}
 

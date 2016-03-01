@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Map;
 
 import model.HeaderField;
+import model.HttpSessionProvider;
 
 public interface IHttpRequest {
 
@@ -26,6 +27,8 @@ public interface IHttpRequest {
     public String addCookie(String key, String value);
 
     public String getCookie(String key);
+    
+    public HttpSessionProvider getSessionProvider();
 
     public String getBody();
 

@@ -6,13 +6,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.util.Map;
 
 import model.HttpRequest;
 import model.HttpResponse;
+import model.HttpSessionProvider;
+import model.request.HeaderRequestField;
 import model.request.HttpRequestMethod;
 import model.request.IHttpRequest;
 import model.response.HttpResponseError;
@@ -22,30 +26,32 @@ import model.response.IHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dispacher.Dispacher;
-import dispacher.DispacherResult;
+import dispatcher.Dispatcher;
+import dispatcher.DispatcherResult;
 
 public class SocketThread extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketThread.class);
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
-    private final Dispacher dispacher;
+    private final Dispatcher dispatcher;
+    private final HttpSessionProvider sessionProvider;
     private final Socket socket;
 
-    public SocketThread(Socket socket, Dispacher dispacher) {
+    public SocketThread(Socket socket, Dispatcher dispatcher,
+	    HttpSessionProvider sessionProvider) {
 
 	super();
 	LOGGER.info("new Socket Thread");
 
 	try {
-	    bufferedReader = new BufferedReader(
-		    new InputStreamReader(socket.getInputStream()));
+	    bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	    printWriter = new PrintWriter(socket.getOutputStream());
 	} catch (IOException e) {
 	    LOGGER.error("", e);
 	}
-	this.dispacher = dispacher;
+	this.dispatcher = dispatcher;
+	this.sessionProvider = sessionProvider;
 	this.socket = socket;
 
     }
@@ -60,9 +66,10 @@ public class SocketThread extends Thread {
 	    String request = readRequest();
 
 	    if (request.length() > 0) {
-		req = HttpRequest.parse(request);
+		req = HttpRequest.parse(request, sessionProvider);
 		resp = new HttpResponse(HttpResponseStatus.OK, req);
-		dispacher(req, resp);
+		dispatcher(req, resp);
+		checkSession(req, resp);
 	    } else {
 		resp = new HttpResponse(HttpResponseStatus.Bad_Request,
 			"text/plain", "Error 400 Bad Request");
@@ -81,7 +88,7 @@ public class SocketThread extends Thread {
 
     private String readRequest() {
 	LOGGER.info("Reading http request");
-	
+
 	String s;
 	StringBuilder res = new StringBuilder();
 	int contentLength = -1;
@@ -91,8 +98,8 @@ public class SocketThread extends Thread {
 		s = bufferedReader.readLine();
 		res.append(s + "\n");
 		if (s.startsWith("Content-Length: ")) {
-		    contentLength = Integer.parseInt(
-			    s.substring("Content-Length: ".length(), s.length()));
+		    contentLength = Integer.parseInt(s.substring(
+			    "Content-Length: ".length(), s.length()));
 		}
 		if (s.isEmpty()) {
 		    if (contentLength != -1) {
@@ -110,22 +117,22 @@ public class SocketThread extends Thread {
 
     }
 
-    private void dispacher(IHttpRequest req, IHttpResponse resp) {
-	LOGGER.info("Dispacher");
-	
+    private void dispatcher(IHttpRequest req, IHttpResponse resp) {
+	LOGGER.info("Dispatcher");
+
 	URL url = req.getUrl();
 	String host = url.getHost();
 	String path = url.getPath();
 	Map<String, String> params = req.getParams();
 
-	if (host.isEmpty() || !dispacher.isValidApplication(host)) {
+	if (host.isEmpty() || !dispatcher.isValidApplication(host)) {
 	    LOGGER.warn("Incorrect application name, Http Not found");
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp,
+		    HttpResponseStatus.Not_Found);
 	    return;
 	}
-	
-	DispacherResult result = dispacher.isValidPath(resp, req.getMethod(),
-		path, params);
+
+	DispatcherResult result = dispatcher.isValidPath(resp, req.getMethod(), path, params);
 
 	if (result == null) {
 	    return;
@@ -136,18 +143,19 @@ public class SocketThread extends Thread {
 
 	if (servlet == null || call == null) {
 	    LOGGER.warn("Server or call is null, Http not found");
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp,
+		    HttpResponseStatus.Not_Found);
 	    return;
 	}
 
-	controllerDispacher(servlet, req, resp, call);
+	controllerDispatcher(servlet, req, resp, call);
 
     }
 
-    private void controllerDispacher(IHttpServlet servlet, IHttpRequest req,
+    private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req,
 	    IHttpResponse resp, String call) {
-	LOGGER.info("Controller dispacher, method : {}, call : {}", req.getMethod(), call);
-	
+	LOGGER.info("Controller dispatcher, method : {}, call : {}", req.getMethod(), call);
+
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
 	    servlet.doGet(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.POST)) {
@@ -156,6 +164,30 @@ public class SocketThread extends Thread {
 	    servlet.doPut(req, resp, call);
 	} else if (req.getMethod().equals(HttpRequestMethod.DELETE)) {
 	    servlet.doDelete(req, resp, call);
+	}
+
+    }
+
+    private void checkSession(IHttpRequest req, IHttpResponse resp) {
+
+	if (resp.getStatus().equals(HttpResponseStatus.OK)) {
+	    String appName = req.getUrl().getHost();
+	    String userAgent = req.getHeaderValue(HeaderRequestField.USER_AGENT);
+	    String ipAdress = socket.getInetAddress().toString();
+	    
+	    try {
+		String key = URLEncoder.encode((userAgent + ipAdress), "UTF-8");
+		sessionProvider.checkSessions();
+		if (sessionProvider.getSession(appName, key) != null && req.getCookie(key) != null) {
+		    resp.setBody(resp.getBody() + " , Not new session");
+		} else {
+		    resp.addCookie(key, "session");
+		    sessionProvider.addSession(appName, key);
+		    resp.setBody(resp.getBody() + " , New session");
+		}
+	    } catch (UnsupportedEncodingException e) {
+		LOGGER.error("Error while encoding key {}", e);
+	    }
 	}
 
     }

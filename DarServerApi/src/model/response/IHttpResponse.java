@@ -19,7 +19,7 @@ public interface IHttpResponse {
 
     public boolean haveCookie(String key);
 
-    public String addCookie(String key, String value);
+    public void addCookie(String key, String value);
 
     public String getCookie(String key);
 }

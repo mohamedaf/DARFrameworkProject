@@ -1,13 +1,13 @@
-package dispacher;
+package dispatcher;
 
 import httpServlet.IHttpServlet;
 
-public class DispacherResult {
+public class DispatcherResult {
 
     private final IHttpServlet servlet;
     private final String call;
 
-    public DispacherResult(IHttpServlet servlet, String call) {
+    public DispatcherResult(IHttpServlet servlet, String call) {
 	
 	super();
 	this.servlet = servlet;
