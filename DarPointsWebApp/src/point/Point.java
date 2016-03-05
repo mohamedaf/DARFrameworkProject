@@ -38,8 +38,22 @@ public class Point {
 	this.y = y;
     }
 
-    @Override
-    public String toString() {
+    public String toString(String contentType) {
+	
+	if (contentType.startsWith("application/json")) {
+	    return this.getJsonResponse();
+	}
+	else {
+	    return this.getTextResponse();
+	}
+	
+    }
+    
+    public String getJsonResponse() {
+	return "{\"id\" : \"" + id + "\" , \"x\" : \"" + x + "\", \"y\" : \"" + y + "\"}";
+    }
+    
+    public String getTextResponse() {
 	return "[id=" + id + ", x=+" + x + ", y=" + y+"]";
     }
 

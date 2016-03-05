@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Map;
 
 import model.request.IHttpRequest;
+import model.response.HeaderResponseField;
 import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
@@ -43,8 +44,10 @@ public class PointController implements IHttpServlet {
 
     private void getPointList(IHttpResponse resp) {
 	LOGGER.info("GET getPointList");
-	resp.setBody(points.toString());
-	LOGGER.info(points.toString());
+	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	resp.setBody(toString(contentType, contentEncoding));
+	LOGGER.info(toString(contentType, contentEncoding));
     }
 
     private void getPoint(IHttpRequest req, IHttpResponse resp) {
@@ -56,8 +59,9 @@ public class PointController implements IHttpServlet {
 	    LOGGER.info("Http Not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	} else {
-	    resp.setBody(p.toString());
-	    LOGGER.info(p.toString());
+	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	    resp.setBody(p.toString(contentType));
+	    LOGGER.info(p.toString(contentType));
 	}
 	
     }
@@ -109,7 +113,8 @@ public class PointController implements IHttpServlet {
 	    Map<String, String> params = req.getParams();
 	    p.setX(Integer.parseInt(params.get("x")));
 	    p.setY(Integer.parseInt(params.get("y")));
-	    String body = "This point has been modified, new value :" + p.toString();
+	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	    String body = "This point has been modified, new value :" + p.toString(contentType);
 	    resp.setBody(body);
 	    LOGGER.info(body);
 	}
@@ -152,7 +157,8 @@ public class PointController implements IHttpServlet {
 	    int x = Integer.parseInt(coordX[1]);
 	    int y = Integer.parseInt(coordY[1]);
 	    Point p = points.addPoint(x, y);
-	    String body = "new Point created : " + p.toString();
+	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	    String body = "new Point created : " + p.toString(contentType);
 	    resp.setBody(body);
 	    LOGGER.info(body);
 	} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
@@ -179,9 +185,11 @@ public class PointController implements IHttpServlet {
     private void deletePoint(IHttpRequest req, IHttpResponse resp) {
 	LOGGER.info("DELETE deletePoint");
 	
-	String body = "Point : " + points.getPoints().toString() + " was removed";
 	int ind = getInd(req);
-	points.getPoints().remove(ind);
+	Point p = points.getPoints().get(ind);
+	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	String body = "Point : " + p.toString(contentType) + " was removed";
+	points.getPoints().remove(p);
 	resp.setBody(body);
 	LOGGER.info(body);
 	
@@ -196,8 +204,8 @@ public class PointController implements IHttpServlet {
 	
     }
     
-    public String toString() {
-	return points.toString();
+    public String toString(String contentType, String contentEncoding) {
+	return points.toString(contentType, contentEncoding);
     }
 
 }

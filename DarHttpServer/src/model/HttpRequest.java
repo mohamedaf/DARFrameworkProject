@@ -186,10 +186,11 @@ public class HttpRequest implements IHttpRequest {
     public String toString() {
 
 	if (headers.containsKey(HeaderRequestField.ACCEPT)) {
-	    if (headers.get(HeaderRequestField.ACCEPT).startsWith("text/html")) {
+	    if (getContentType().equals("text/html")) {
 		LOGGER.info("building text/html request echo");
 		return this.getHtmlResponse();
-	    } else if (headers.get(HeaderRequestField.ACCEPT).startsWith("application/json")) {
+	    }
+	    if (getContentType().equals("application/json")) {
 		LOGGER.info("building application/json request echo");
 		return this.getJsonResponse();
 	    }
@@ -202,7 +203,6 @@ public class HttpRequest implements IHttpRequest {
     public String getContentType() {
 
 	String contentType = headers.get(HeaderRequestField.ACCEPT);
-
 	if (contentType != null
 		&& (contentType.startsWith("text/html") || 
 			contentType.startsWith("application/json"))) {
