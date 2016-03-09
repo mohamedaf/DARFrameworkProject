@@ -16,9 +16,14 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
 	<dependency>
-		<groupId>DarPointsWebApp</groupId>
-		<artifactId>DarPointsWebApp</artifactId>
+		<groupId>DarWebApplicationApi</groupId>
+		<artifactId>DarWebApplicationApi</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+		<groupId>org.xeustechnologies</groupId>
+		<artifactId>jcl-core</artifactId>
+		<version>2.7</version>
 	</dependency>
 	<dependency>
 		<groupId>jdom</groupId>

@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import model.request.IHttpRequest;
@@ -19,6 +20,7 @@ public class HttpResponse implements IHttpResponse {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpResponse.class);
     private HttpResponseStatus status;
+    private final ViewProvider viewProvider;
     private final Map<HeaderField, String> headers;
     private final Map<String, String> cookies;
     private String body;
@@ -28,6 +30,7 @@ public class HttpResponse implements IHttpResponse {
 
 	super();
 	this.status = status;
+	this.viewProvider = new ViewProvider();
 	this.headers = new HashMap<HeaderField, String>();
 	this.cookies = new HashMap<String, String>();
 	this.body = body;
@@ -39,6 +42,7 @@ public class HttpResponse implements IHttpResponse {
 
 	super();
 	this.status = status;
+	this.viewProvider = new ViewProvider();
 	this.headers = (request.getHeaders() != null) ? request.getHeaders() : new HashMap<HeaderField, String>();
 	this.cookies = (request.getCookies() != null) ? request.getCookies() : new HashMap<String, String>();
 	this.body = request.toString();
@@ -108,6 +112,20 @@ public class HttpResponse implements IHttpResponse {
     public String getBody() {
 	return body;
     }
+    
+    public void addStringViewAttribute(String attribute, String value) {
+	viewProvider.addStringAttribute(attribute, value);
+    }
+    
+    public void addListViewAttribute(String attribute, List<String> values) {
+	viewProvider.addListAttribute(attribute, values);
+    }
+    
+    public String setViewContent(String filePath) {
+	String b = viewProvider.getViewContent(filePath, "point");
+	this.setBody(b);
+	return b;
+    }
 
     @Override
     public String toString() {
@@ -124,14 +142,10 @@ public class HttpResponse implements IHttpResponse {
 	}
 
 	if (!cookies.isEmpty()) {
-	    response.append("Set-Cookie:");
 	    for (String name : cookies.keySet()) {
-		response.append(" " + name + "=" + cookies.get(name) + ";");
+		response.append("Set-Cookie: " + name + "=" + cookies.get(name) + "\n");
 	    }
-	    response = response.delete(response.length()-1, response.length());
-	    response.append("\n");
 	}
-
 	response.append("\n");
 
 	if (body != null)

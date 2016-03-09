@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application name="point">
-	<controller name="pointController">
+	<controller name="PointController">
 		<path value="/list/*" method="GET" call="getPointList" />
 		<path value="/\d+/*" method="GET" call="getPoint" />
 		<path value="/\d+/x/*" method="GET" call="getX" />

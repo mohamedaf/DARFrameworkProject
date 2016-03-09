@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="{contentEncoding}"/>
+		<title>Liste de points</title>
+	</head>
+	<body>
+		<p>
+			{text}<br/>
+			<ul>
+				<li>{list}</li>
+			</ul>
+		</p>
+	</body>
+</html>

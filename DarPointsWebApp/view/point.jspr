@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="{contentEncoding}"/>
+		<title>Point</title>
+	</head>
+	<body>
+		<p>
+			{text} {point}
+		</p>
+	</body>
+</html>

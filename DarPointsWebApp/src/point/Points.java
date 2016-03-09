@@ -31,35 +31,12 @@ public class Points {
 
     public String toString(String contentType, String contentEncoding) {
 
-	if (contentType.startsWith("text/html")) {
-	    return this.getHtmlResponse(contentEncoding);
-	}
 	if (contentType.startsWith("application/json")) {
 	    return this.getJsonResponse();
 	}
 	else {
 	    return this.getTextResponse();
 	}
-	
-    }
-    
-    public String getHtmlResponse(String contentEncoding) {
-	
-	StringBuilder pointsStr = new StringBuilder(
-		"<!DOCTYPE html>\n<html>\n"
-			+ "<head> \n<meta charset=\""
-			+ contentEncoding
-			+ "\">\n"
-			+ "<title>Liste de points</title>\n</head>\n<body>\n"
-			+ "Liste de points:</br><ul>\n");
-	
-	for (Integer ind : points.keySet()) {
-	    Point p = points.get(ind);
-	    pointsStr.append("<li>" + p.toString("text/html") + "</li>");
-	}
-	
-	pointsStr.append("</ul></body>\n</html>");
-	return pointsStr.toString();
 	
     }
     

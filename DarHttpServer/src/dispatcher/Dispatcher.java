@@ -95,6 +95,11 @@ public class Dispatcher {
 	if (checkQueryString(pathNode, params)) {
 	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
 	    IHttpServlet servlet = getController(controllerName);
+	    if(servlet == null) {
+		LOGGER.warn("Http Internal Server Error");
+		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
+		return null;
+	    }
 	    String call = pathNode.getAttributeValue("call");
 	    return new DispatcherResult(servlet, call);
 	} else {
@@ -168,8 +173,8 @@ public class Dispatcher {
 	    return null;
 
 	switch (name) {
-	case "pointController":
-	    LOGGER.info("Getting pointController");
+	case "PointController":
+	    LOGGER.info("Getting PointController");
 	    return ControllerFactory.getPointController();
 	default:
 	    LOGGER.warn("No corresponding controller found");

@@ -98,8 +98,7 @@ public class SocketThread extends Thread {
 		s = bufferedReader.readLine();
 		res.append(s + "\n");
 		if (s.startsWith("Content-Length: ")) {
-		    contentLength = Integer.parseInt(s.substring(
-			    "Content-Length: ".length(), s.length()));
+		    contentLength = Integer.parseInt(s.substring("Content-Length: ".length(), s.length()));
 		}
 		if (s.isEmpty()) {
 		    if (contentLength != -1) {
@@ -127,8 +126,7 @@ public class SocketThread extends Thread {
 
 	if (host.isEmpty() || !dispatcher.isValidApplication(host)) {
 	    LOGGER.warn("Incorrect application name, Http Not found");
-	    HttpResponseError.setHttpResponseError(resp,
-		    HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
 
@@ -143,8 +141,7 @@ public class SocketThread extends Thread {
 
 	if (servlet == null || call == null) {
 	    LOGGER.warn("Server or call is null, Http not found");
-	    HttpResponseError.setHttpResponseError(resp,
-		    HttpResponseStatus.Not_Found);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	    return;
 	}
 
@@ -152,8 +149,7 @@ public class SocketThread extends Thread {
 
     }
 
-    private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req,
-	    IHttpResponse resp, String call) {
+    private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req, IHttpResponse resp, String call) {
 	LOGGER.info("Controller dispatcher, method : {}, call : {}", req.getMethod(), call);
 
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
@@ -181,7 +177,7 @@ public class SocketThread extends Thread {
 		if (sessionProvider.getSession(appName, key) != null && req.getCookie(key) != null) {
 		    resp.setBody(resp.getBody() + " , Not new session");
 		} else {
-		    resp.addCookie(key, "session");
+		    resp.addCookie((userAgent + ipAdress), "session");
 		    sessionProvider.addSession(appName, key);
 		    resp.setBody(resp.getBody() + " , New session");
 		}

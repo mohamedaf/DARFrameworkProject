@@ -3,6 +3,8 @@ package point;
 import httpServlet.IHttpServlet;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import model.request.IHttpRequest;
@@ -43,23 +45,43 @@ public class PointController implements IHttpServlet {
     }
 
     private void getPointList(IHttpResponse resp) {
+	
 	LOGGER.info("GET getPointList");
 	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	if(contentType.startsWith("text/html")) {
+	    resp.addStringViewAttribute("contentEncoding", contentEncoding);
+	    resp.addStringViewAttribute("text", "Liste de points:");
+	    Map<Integer, Point> mapPoints = points.getPoints();
+	    List<String> listPoints = new ArrayList<String>();
+	    for(Integer id : mapPoints.keySet()) {
+		listPoints.add(mapPoints.get(id).toString("text/html"));
+	    }
+	    resp.addListViewAttribute("list", listPoints);
+	    LOGGER.info(resp.setViewContent("view/listePoint.jspr"));
+	    return;
+	}
 	resp.setBody(toString(contentType, contentEncoding));
 	LOGGER.info(toString(contentType, contentEncoding));
+	
     }
 
     private void getPoint(IHttpRequest req, IHttpResponse resp) {
+	
 	LOGGER.info("GET getPoint");
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
 	
 	if (p == null) {
-	    LOGGER.info("Http Not found");
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    LOGGER.info("Http Bad request");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	} else {
 	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	    if(contentType.startsWith("text/html")) {
+		String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+		callPointView(resp, contentEncoding, "Point:", p);
+		return;
+	    }
 	    resp.setBody(p.toString(contentType));
 	    LOGGER.info(p.toString(contentType));
 	}
@@ -71,17 +93,37 @@ public class PointController implements IHttpServlet {
 	
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
+	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	   
+	if (p == null && (coord.equalsIgnoreCase("x") || coord.equalsIgnoreCase("y"))) {
+	    LOGGER.info("Http Bad request");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	} 
+	
+	if(p == null) {
+	    LOGGER.info("Http Not found");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	    return;
+	}
+	
 	if (coord.equalsIgnoreCase("x")) {
+	    if(contentType.startsWith("text/html")) {
+		callPointView(resp, contentEncoding, "x =", p);
+		return;
+	    }
 	    String body = "x = " + p.getX();
 	    resp.setBody(body);
 	    LOGGER.info(body);
 	} else if (coord.equalsIgnoreCase("y")) {
+	    if(contentType.startsWith("text/html")) {
+		callPointView(resp, contentEncoding, "y =", p);
+		return;
+	    }
 	    String body = "y = " + p.getY();
 	    resp.setBody(body);
 	    LOGGER.info(body);
-	} else {
-	    LOGGER.info("Http Not found");
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	}
 	
     }
@@ -105,19 +147,25 @@ public class PointController implements IHttpServlet {
 	
 	int ind = getInd(req);
 	Point p = points.getPoint(ind);
+	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	
 	if (p == null) {
 	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
-	} else {
-	    Map<String, String> params = req.getParams();
-	    p.setX(Integer.parseInt(params.get("x")));
-	    p.setY(Integer.parseInt(params.get("y")));
-	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
-	    String body = "This point has been modified, new value :" + p.toString(contentType);
-	    resp.setBody(body);
-	    LOGGER.info(body);
+	    return;
 	}
+	
+	Map<String, String> params = req.getParams();
+	p.setX(Integer.parseInt(params.get("x")));
+	p.setY(Integer.parseInt(params.get("y")));
+	if(contentType.startsWith("text/html")) {
+	    String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	    callPointView(resp, contentEncoding, "This point has been modified, new value :", p);
+	    return;
+	}
+	String body = "This point has been modified, new value : " + p.toString(contentType);
+	resp.setBody(body);
+	LOGGER.info(body);
 	
     }
 
@@ -158,6 +206,11 @@ public class PointController implements IHttpServlet {
 	    int y = Integer.parseInt(coordY[1]);
 	    Point p = points.addPoint(x, y);
 	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
+	    if(contentType.startsWith("text/html")) {
+		String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+		callPointView(resp, contentEncoding, "new Point created :", p);
+		return;
+	    }
 	    String body = "new Point created : " + p.toString(contentType);
 	    resp.setBody(body);
 	    LOGGER.info(body);
@@ -187,8 +240,20 @@ public class PointController implements IHttpServlet {
 	
 	int ind = getInd(req);
 	Point p = points.getPoints().get(ind);
+	
+	if (p == null) {
+	    LOGGER.info("Http Bad request");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	}
+	
 	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
-	String body = "Point : " + p.toString(contentType) + " was removed";
+	if(contentType.startsWith("text/html")) {
+	    String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	    callPointView(resp, contentEncoding, "Removed point :", p);
+	    return;
+	}
+	String body = "Removed point : " + p.toString(contentType);
 	points.getPoints().remove(p);
 	resp.setBody(body);
 	LOGGER.info(body);
@@ -202,6 +267,13 @@ public class PointController implements IHttpServlet {
 	String[] splittedPath = path.split("/");
 	return Integer.parseInt(splittedPath[1]);
 	
+    }
+    
+    public void callPointView(IHttpResponse resp, String contentEncoding, String text, Point p){
+	resp.addStringViewAttribute("contentEncoding", contentEncoding);
+	resp.addStringViewAttribute("text", text);
+	resp.addStringViewAttribute("point", p.toString("text/html"));
+	LOGGER.info(resp.setViewContent("view/point.jspr"));
     }
     
     public String toString(String contentType, String contentEncoding) {
