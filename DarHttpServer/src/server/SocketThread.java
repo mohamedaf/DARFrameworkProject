@@ -39,8 +39,7 @@ public class SocketThread extends Thread {
     private final HttpSessionProvider sessionProvider;
     private final Socket socket;
 
-    public SocketThread(Socket socket, Dispatcher dispatcher,
-	    HttpSessionProvider sessionProvider) {
+    public SocketThread(Socket socket, Dispatcher dispatcher, HttpSessionProvider sessionProvider) {
 
 	super();
 	LOGGER.info("new Socket Thread");
@@ -61,29 +60,28 @@ public class SocketThread extends Thread {
     public void run() {
 
 	super.run();
+	IHttpRequest req;
+	IHttpResponse resp;
 	try {
-	    IHttpRequest req;
-	    IHttpResponse resp;
 	    String request = readRequest();
-
 	    if (request.length() > 0) {
 		req = HttpRequest.parse(request, sessionProvider);
 		resp = new HttpResponse(HttpResponseStatus.OK, req);
 		dispatcher(req, resp);
 		checkSession(req, resp);
 	    } else {
-		resp = new HttpResponse(HttpResponseStatus.Bad_Request,
-			"text/plain", "Error 400 Bad Request");
+		resp = new HttpResponse(HttpResponseStatus.Bad_Request, "text/plain", "Error 400 Bad Request");
 	    }
-
-	    LOGGER.info("Sending http response");
-	    printWriter.write(resp.toString());
-	    printWriter.flush();
-	    printWriter.flush();
 	    socket.close();
 	} catch (Exception e) {
-	    LOGGER.error("", e);
+	    resp = new HttpResponse(HttpResponseStatus.Internal_Server_Error, "text/plain", "Error 500 Internal Server Error");
+	    LOGGER.error("Internal Server Error ", e);
 	}
+	
+	LOGGER.info("Sending http response");
+	printWriter.write(resp.toString());
+	printWriter.flush();
+	printWriter.flush();
 
     }
 
@@ -110,7 +108,7 @@ public class SocketThread extends Thread {
 		    return res.toString();
 		}
 	    } catch (IOException e) {
-		e.printStackTrace();
+		LOGGER.error("Socket error when reading http Request ", e);
 		return new String();
 	    }
 	}
@@ -135,13 +133,13 @@ public class SocketThread extends Thread {
 	try {
 	    result = dispatcher.isValidPath(resp, req.getMethod(), host, path, params);
 	} catch (JDOMException | IOException e) {
-	    LOGGER.error("Internal server error, please check dispacher.xml file of {} app ", host, e);
+	    LOGGER.error("Internal Server Error, please check dispacher.xml file of {} app ", host, e);
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 	    return;
 	}
 
 	if (result == null) {
-	    LOGGER.error("Internal server error, please check dispacher.xml file of {} app ", host);
+	    LOGGER.error("Internal Server Error, please check dispacher.xml file of {} app ", host);
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 	    return;
 	}
@@ -193,6 +191,7 @@ public class SocketThread extends Thread {
 		}
 	    } catch (UnsupportedEncodingException e) {
 		LOGGER.error("Error while encoding key {}", e);
+		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 	    }
 	}
 

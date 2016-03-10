@@ -49,8 +49,7 @@ public class Dispatcher {
 	    while (iter.hasNext()) {
 		currentNode = (Element) iter.next();
 		applicationName = currentNode.getAttributeValue("name");
-		if (applicationName != null
-			&& applicationName.equalsIgnoreCase(name))
+		if (applicationName != null && applicationName.equalsIgnoreCase(name))
 		    return true;
 	    }
 	} catch (JDOMException e) {
@@ -84,15 +83,13 @@ public class Dispatcher {
 	    pathMethod = pathNode.getAttributeValue("method");
 	    pathValue = pathNode.getAttributeValue("value");
 
-	    if (pathMethod.equalsIgnoreCase(method.name())
-		    && path.matches(pathValue)) {
+	    if (pathMethod.equalsIgnoreCase(method.name()) && path.matches(pathValue)) {
 		return checkPathNode(resp, pathNode, params);
 	    }
 	}
 
 	LOGGER.warn("Http Not found");
-	HttpResponseError.setHttpResponseError(resp,
-		HttpResponseStatus.Not_Found);
+	HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
 	return null;
 
     }
@@ -102,29 +99,25 @@ public class Dispatcher {
 	LOGGER.info("Checking path node");
 
 	if (checkQueryString(pathNode, params)) {
-	    String controllerName = pathNode.getParentElement()
-		    .getAttributeValue("name");
+	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
 	    IHttpServlet servlet = getController(controllerName);
 	    if (servlet == null) {
 		LOGGER.warn("Http Internal Server Error");
-		HttpResponseError.setHttpResponseError(resp,
-			HttpResponseStatus.Internal_Server_Error);
+		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 		return null;
 	    }
 	    String call = pathNode.getAttributeValue("call");
 	    return new DispatcherResult(servlet, call);
 	} else {
 	    LOGGER.warn("Http Bad request");
-	    HttpResponseError.setHttpResponseError(resp,
-		    HttpResponseStatus.Bad_Request);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return null;
 	}
 
     }
 
     @SuppressWarnings("unchecked")
-    private boolean checkQueryString(Element pathNode,
-	    Map<String, String> params) {
+    private boolean checkQueryString(Element pathNode, Map<String, String> params) {
 	LOGGER.info("Checking query string");
 
 	Element paramsNode = pathNode.getChild("params");

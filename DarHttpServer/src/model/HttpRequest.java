@@ -181,6 +181,18 @@ public class HttpRequest implements IHttpRequest {
 	}
 
     }
+    
+    public String getContentType() {
+
+	String contentType = headers.get(HeaderRequestField.ACCEPT);
+	if (contentType != null
+		&& (contentType.startsWith("text/html") || 
+			contentType.startsWith("application/json"))) {
+	    return headers.get(HeaderRequestField.ACCEPT);
+	}
+	return "text/plain";
+
+    }
 
     @Override
     public String toString() {
@@ -197,18 +209,6 @@ public class HttpRequest implements IHttpRequest {
 	}
 	LOGGER.info("building text/plain request echo");
 	return this.getTextResponse();
-
-    }
-
-    public String getContentType() {
-
-	String contentType = headers.get(HeaderRequestField.ACCEPT);
-	if (contentType != null
-		&& (contentType.startsWith("text/html") || 
-			contentType.startsWith("application/json"))) {
-	    return headers.get(HeaderRequestField.ACCEPT);
-	}
-	return "text/plain";
 
     }
 

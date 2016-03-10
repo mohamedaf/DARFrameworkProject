@@ -25,8 +25,7 @@ public class HttpResponse implements IHttpResponse {
     private final Map<String, String> cookies;
     private String body;
 
-    public HttpResponse(HttpResponseStatus status, String contentType,
-	    String body) {
+    public HttpResponse(HttpResponseStatus status, String contentType, String body) {
 
 	super();
 	this.status = status;
@@ -43,9 +42,9 @@ public class HttpResponse implements IHttpResponse {
 	super();
 	this.status = status;
 	this.viewProvider = new ViewProvider();
-	this.headers = (request.getHeaders() != null) ? request.getHeaders() : new HashMap<HeaderField, String>();
+	this.headers = new HashMap<HeaderField, String>();
 	this.cookies = (request.getCookies() != null) ? request.getCookies() : new HashMap<String, String>();
-	this.body = request.toString();
+	this.body = new String();
 	initHeaders(request.getContentType());
 
     }
@@ -122,9 +121,11 @@ public class HttpResponse implements IHttpResponse {
     }
     
     public String setViewContent(String filePath) {
+	
 	String b = viewProvider.getViewContent(filePath, "point");
 	this.setBody(b);
 	return b;
+	
     }
 
     @Override
