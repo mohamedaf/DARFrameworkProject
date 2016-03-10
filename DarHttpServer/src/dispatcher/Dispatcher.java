@@ -2,6 +2,8 @@ package dispatcher;
 
 import httpServlet.IHttpServlet;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +16,15 @@ import model.response.IHttpResponse;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Dispatcher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Dispatcher.class);
+    private static final Logger LOGGER = LoggerFactory
+	    .getLogger(Dispatcher.class);
     private Document document = null;
 
     public Dispatcher(Document document) {
@@ -33,7 +37,7 @@ public class Dispatcher {
     @SuppressWarnings("rawtypes")
     public boolean isValidApplication(String name) {
 	LOGGER.info("Verifying if the host correspond to an valid application");
-	
+
 	Element rootNode = document.getRootElement();
 	Element currentNode = null;
 	String applicationName = null;
@@ -45,7 +49,8 @@ public class Dispatcher {
 	    while (iter.hasNext()) {
 		currentNode = (Element) iter.next();
 		applicationName = currentNode.getAttributeValue("name");
-		if (applicationName != null && applicationName.equalsIgnoreCase(name))
+		if (applicationName != null
+			&& applicationName.equalsIgnoreCase(name))
 		    return true;
 	    }
 	} catch (JDOMException e) {
@@ -57,61 +62,69 @@ public class Dispatcher {
 
     @SuppressWarnings("rawtypes")
     public DispatcherResult isValidPath(IHttpResponse resp,
-	    HttpRequestMethod method, String path, Map<String, String> params) {
+	    HttpRequestMethod method, String appName, String path,
+	    Map<String, String> params) throws JDOMException, IOException {
 	LOGGER.info("Verifying if the path is valid");
 
-	Element rootNode = document.getRootElement();
+	URL url = new URL("jar:file:" + System.getProperty("user.dir")
+		+ "/apps/" + appName + ".jar!/dispatcher.xml");
+	SAXBuilder sxb = new SAXBuilder();
+	Document appDocument = sxb.build(url.openStream());
+	XPath xpa = XPath.newInstance("//path");
+
+	Element rootNode = appDocument.getRootElement();
 	Element pathNode = null;
 	String pathMethod = null;
 	String pathValue = null;
 
-	try {
-	    XPath xpa = XPath.newInstance("//path");
-	    Iterator iter = xpa.selectNodes(rootNode).iterator();
+	Iterator iter = xpa.selectNodes(rootNode).iterator();
 
-	    while (iter.hasNext()) {
-		pathNode = (Element) iter.next();
-		pathMethod = pathNode.getAttributeValue("method");
-		pathValue = pathNode.getAttributeValue("value");
+	while (iter.hasNext()) {
+	    pathNode = (Element) iter.next();
+	    pathMethod = pathNode.getAttributeValue("method");
+	    pathValue = pathNode.getAttributeValue("value");
 
-		if (pathMethod.equalsIgnoreCase(method.name()) && path.matches(pathValue)) {
-		    return checkPathNode(resp, pathNode, params);
-		}
+	    if (pathMethod.equalsIgnoreCase(method.name())
+		    && path.matches(pathValue)) {
+		return checkPathNode(resp, pathNode, params);
 	    }
-	} catch (JDOMException e) {
-	    LOGGER.error("Erreur JDOM ", e);
 	}
 
 	LOGGER.warn("Http Not found");
-	HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
+	HttpResponseError.setHttpResponseError(resp,
+		HttpResponseStatus.Not_Found);
 	return null;
 
     }
 
-    private DispatcherResult checkPathNode(IHttpResponse resp, Element pathNode,
-	    Map<String, String> params) {
+    private DispatcherResult checkPathNode(IHttpResponse resp,
+	    Element pathNode, Map<String, String> params) {
 	LOGGER.info("Checking path node");
 
 	if (checkQueryString(pathNode, params)) {
-	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
+	    String controllerName = pathNode.getParentElement()
+		    .getAttributeValue("name");
 	    IHttpServlet servlet = getController(controllerName);
-	    if(servlet == null) {
+	    if (servlet == null) {
 		LOGGER.warn("Http Internal Server Error");
-		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
+		HttpResponseError.setHttpResponseError(resp,
+			HttpResponseStatus.Internal_Server_Error);
 		return null;
 	    }
 	    String call = pathNode.getAttributeValue("call");
 	    return new DispatcherResult(servlet, call);
 	} else {
 	    LOGGER.warn("Http Bad request");
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    HttpResponseError.setHttpResponseError(resp,
+		    HttpResponseStatus.Bad_Request);
 	    return null;
 	}
 
     }
 
     @SuppressWarnings("unchecked")
-    private boolean checkQueryString(Element pathNode, Map<String, String> params) {
+    private boolean checkQueryString(Element pathNode,
+	    Map<String, String> params) {
 	LOGGER.info("Checking query string");
 
 	Element paramsNode = pathNode.getChild("params");

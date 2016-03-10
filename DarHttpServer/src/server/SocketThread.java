@@ -23,6 +23,7 @@ import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
 
+import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,9 +131,18 @@ public class SocketThread extends Thread {
 	    return;
 	}
 
-	DispatcherResult result = dispatcher.isValidPath(resp, req.getMethod(), path, params);
+	DispatcherResult result = null;
+	try {
+	    result = dispatcher.isValidPath(resp, req.getMethod(), host, path, params);
+	} catch (JDOMException | IOException e) {
+	    LOGGER.error("Internal server error, please check dispacher.xml file of {} app ", host, e);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
+	    return;
+	}
 
 	if (result == null) {
+	    LOGGER.error("Internal server error, please check dispacher.xml file of {} app ", host);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 	    return;
 	}
 
