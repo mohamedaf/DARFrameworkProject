@@ -25,6 +25,7 @@ public class HttpRequest implements IHttpRequest {
     private final Map<String, String> cookies;
     private final HttpSessionProvider sessionProvider;
     private final String body;
+    private HttpSession session;
 
     private HttpRequest(HttpRequestMethod method, URL url,
 	    Map<String, String> params, Map<HeaderField, String> headers,
@@ -38,6 +39,7 @@ public class HttpRequest implements IHttpRequest {
 	this.cookies = (cookies != null) ? cookies : new HashMap<String, String>();
 	this.sessionProvider = sessionProvider;
 	this.body = body;
+	this.session = null;
 
     }
 
@@ -89,6 +91,14 @@ public class HttpRequest implements IHttpRequest {
 	return body;
     }
 
+    public void setSession(HttpSession session) {
+        this.session = session;
+    }
+    
+    public HttpSession getSession() {
+        return session;
+    }
+
     public static HttpRequest parse(String httpRequest, HttpSessionProvider sessionProvider)
 	    throws HttpRequestParseException, MalformedURLException, UnsupportedEncodingException {
 	LOGGER.info("HTTP request parsing");
@@ -129,20 +139,32 @@ public class HttpRequest implements IHttpRequest {
 	    i++;
 	}
 
-	return new HttpRequest(method, url, splitQuery(url), headers, cookies, 
+	Map<String, String> params;
+	if(method.equals(HttpRequestMethod.POST)) {
+	    params = parseQueryString(body.toString());
+	} else {
+	    params = splitQuery(url);
+	}
+	return new HttpRequest(method, url, params, headers, cookies, 
 		sessionProvider, body.toString());
 
     }
 
-    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+    private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
 	LOGGER.info("Splitting http request query");
 	
 	Map<String, String> query_pairs = new HashMap<String, String>();
 
 	if (url == null || url.getQuery() == null)
 	    return query_pairs;
+	
+	return parseQueryString(url.getQuery());
 
-	String query = url.getQuery();
+    }
+    
+    private static Map<String, String> parseQueryString(String query) throws UnsupportedEncodingException {
+	
+	Map<String, String> query_pairs = new HashMap<String, String>();
 	String[] pairs = query.split("&");
 	for (String pair : pairs) {
 	    int idx = pair.indexOf("=");
@@ -156,7 +178,7 @@ public class HttpRequest implements IHttpRequest {
 	}
 
 	return query_pairs;
-
+	
     }
 
     private static void parseHeader(String[] lines, Map<String, String> cookies,

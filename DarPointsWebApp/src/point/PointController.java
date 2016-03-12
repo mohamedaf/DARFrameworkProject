@@ -187,23 +187,24 @@ public class PointController implements IHttpServlet {
 	LOGGER.info("POST addPoint");
 	
 	if (req.getBody().isEmpty()) {
+	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
 	
-	String[] coords = req.getBody().split("&");
+	Map<String, String> reqParams = req.getParams();
+	String coordX = reqParams.get("x");
+	String coordY = reqParams.get("y");
 	
-	if (coords.length < 2) {
+	if (coordX == null || coordY == null) {
+	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
 	}
-
-	String[] coordX = coords[0].split("=");
-	String[] coordY = coords[1].split("=");
 	
 	try {
-	    int x = Integer.parseInt(coordX[1]);
-	    int y = Integer.parseInt(coordY[1]);
+	    int x = Integer.parseInt(coordX);
+	    int y = Integer.parseInt(coordY);
 	    Point p = points.addPoint(x, y);
 	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	    if(contentType.startsWith("text/html")) {
@@ -214,7 +215,7 @@ public class PointController implements IHttpServlet {
 	    String body = "new Point created : " + p.toString(contentType);
 	    resp.setBody(body);
 	    LOGGER.info(body);
-	} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+	} catch (NumberFormatException e) {
 	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	}
@@ -269,7 +270,7 @@ public class PointController implements IHttpServlet {
 	
     }
     
-    public void callPointView(IHttpResponse resp, String contentEncoding, String text, Point p){
+    private void callPointView(IHttpResponse resp, String contentEncoding, String text, Point p){
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addStringViewAttribute("text", text);
 	resp.addStringViewAttribute("point", p.toString("text/html"));

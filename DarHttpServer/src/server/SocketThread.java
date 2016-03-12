@@ -32,14 +32,16 @@ import dispatcher.DispatcherResult;
 
 public class SocketThread extends Thread {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SocketThread.class);
+    private static final Logger LOGGER = LoggerFactory
+	    .getLogger(SocketThread.class);
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private final Dispatcher dispatcher;
     private final HttpSessionProvider sessionProvider;
     private final Socket socket;
 
-    public SocketThread(Socket socket, Dispatcher dispatcher, HttpSessionProvider sessionProvider) {
+    public SocketThread(Socket socket, Dispatcher dispatcher,
+	    HttpSessionProvider sessionProvider) {
 
 	super();
 	LOGGER.info("new Socket Thread");
@@ -67,8 +69,8 @@ public class SocketThread extends Thread {
 	    if (request.length() > 0) {
 		req = HttpRequest.parse(request, sessionProvider);
 		resp = new HttpResponse(HttpResponseStatus.OK, req);
-		dispatcher(req, resp);
 		checkSession(req, resp);
+		dispatcher(req, resp);
 	    } else {
 		resp = new HttpResponse(HttpResponseStatus.Bad_Request, "text/plain", "Error 400 Bad Request");
 	    }
@@ -77,7 +79,7 @@ public class SocketThread extends Thread {
 	    resp = new HttpResponse(HttpResponseStatus.Internal_Server_Error, "text/plain", "Error 500 Internal Server Error");
 	    LOGGER.error("Internal Server Error ", e);
 	}
-	
+
 	LOGGER.info("Sending http response");
 	printWriter.write(resp.toString());
 	printWriter.flush();
@@ -158,7 +160,8 @@ public class SocketThread extends Thread {
     }
 
     private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req, IHttpResponse resp, String call) {
-	LOGGER.info("Controller dispatcher, method : {}, call : {}", req.getMethod(), call);
+	LOGGER.info("Controller dispatcher, method : {}, call : {}",
+		req.getMethod(), call);
 
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
 	    servlet.doGet(req, resp, call);
@@ -174,25 +177,21 @@ public class SocketThread extends Thread {
 
     private void checkSession(IHttpRequest req, IHttpResponse resp) {
 
-	if (resp.getStatus().equals(HttpResponseStatus.OK)) {
-	    String appName = req.getUrl().getHost();
-	    String userAgent = req.getHeaderValue(HeaderRequestField.USER_AGENT);
-	    String ipAdress = socket.getInetAddress().toString();
-	    
-	    try {
-		String key = URLEncoder.encode((userAgent + ipAdress), "UTF-8");
-		sessionProvider.checkSessions();
-		if (sessionProvider.getSession(appName, key) != null && req.getCookie(key) != null) {
-		    resp.setBody(resp.getBody() + " , Not new session");
-		} else {
-		    resp.addCookie((userAgent + ipAdress), "session");
-		    sessionProvider.addSession(appName, key);
-		    resp.setBody(resp.getBody() + " , New session");
-		}
-	    } catch (UnsupportedEncodingException e) {
-		LOGGER.error("Error while encoding key {}", e);
-		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
+	String appName = req.getUrl().getHost();
+	String userAgent = req.getHeaderValue(HeaderRequestField.USER_AGENT);
+	String ipAdress = socket.getInetAddress().toString();
+
+	try {
+	    String key = URLEncoder.encode((userAgent + ipAdress), "UTF-8");
+	    sessionProvider.checkSessions();
+	    if (sessionProvider.getSession(appName, key) == null || req.getCookie(key) == null) {
+		resp.addCookie((userAgent + ipAdress), "session");
+		sessionProvider.addSession(appName, key);
 	    }
+	    ((HttpRequest) req).setSession(sessionProvider.getSession(appName, key));
+	} catch (UnsupportedEncodingException e) {
+	    LOGGER.error("Error while encoding key {}", e);
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 	}
 
     }

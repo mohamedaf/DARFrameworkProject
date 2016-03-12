@@ -7,7 +7,7 @@ import java.util.Map;
 public class HttpSession {
 
     private final String key;
-    private final Map<String, String> variables;
+    private final Map<String, Object> variables;
     private Date lastRequest;
     // Millisecondes
     private int timeout;
@@ -16,13 +16,13 @@ public class HttpSession {
 
 	super();
 	this.key = key;
-	this.variables = new HashMap<String, String>();
+	this.variables = new HashMap<String, Object>();
 	this.lastRequest = lastRequest;
 	this.timeout = timeout;
 
     }
     
-    public void addValue(String name, String value) {
+    public void addValue(String name, Object value) {
 	variables.put(name, value);
     }
     
@@ -30,7 +30,7 @@ public class HttpSession {
 	return variables.containsKey(name);
     }
     
-    public String getValue(String name) {
+    public Object getValue(String name) {
 	return variables.get(name);
     }
 
@@ -55,19 +55,23 @@ public class HttpSession {
     }
     
     public boolean exceededTimeout(Date current) {
+	
 	if((current.getTime() - lastRequest.getTime()) > timeout)
 	    return true;
 	return false;
+	
     }
     
     /**
-     * We don't create Session with null values in this Servern, then we didn't
+     * We don't create Session with null values in this Server, then we didn't
      * make test for it
      */
     public boolean equals(HttpSession session) {
+	
 	if(key != null && session.getKey() != null)
 	    return (key.equals(session.getKey()));
 	return false;
+	
     }
 
 }
