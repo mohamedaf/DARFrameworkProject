@@ -65,8 +65,7 @@ public class Dispatcher {
 	    Map<String, String> params) throws JDOMException, IOException {
 	LOGGER.info("Verifying if the path is valid");
 
-	URL url = new URL("jar:file:" + System.getProperty("user.dir")
-		+ "/apps/" + appName + ".jar!/dispatcher.xml");
+	URL url = new URL("jar:file:" + System.getProperty("user.dir") + "/apps/" + appName + ".jar!/dispatcher.xml");
 	SAXBuilder sxb = new SAXBuilder();
 	Document appDocument = sxb.build(url.openStream());
 	XPath xpa = XPath.newInstance("//path");
@@ -182,6 +181,9 @@ public class Dispatcher {
 	case "PointController":
 	    LOGGER.info("Getting PointController");
 	    return ControllerFactory.getPointController();
+	case "GoodDealController":
+	    LOGGER.info("Getting GoodDealController");
+	    return ControllerFactory.getGoodDealController();
 	default:
 	    LOGGER.warn("No corresponding controller found");
 	    return null;

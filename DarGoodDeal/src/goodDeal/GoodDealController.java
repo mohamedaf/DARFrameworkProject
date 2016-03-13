@@ -33,10 +33,11 @@ public class GoodDealController implements IHttpServlet {
 
 	adsProvider = new AdsProvider();
 	usersProvider = new UsersProvider();
-	usersProvider.addUser(new User("mohamed.affes", "3262731"));
 	usersProvider.addUser(new User("testuser1", "test"));
 	usersProvider.addUser(new User("testuser2", "test"));
-
+	adsProvider.addAd(new Ad(usersProvider.getUser("testuser1", "test"), "Annonce test 1", "Content 1", 260));
+	adsProvider.addAd(new Ad(usersProvider.getUser("testuser2", "test"), "Annonce test 2", "Content 2", 60));
+	
     }
 
     @Override
@@ -69,7 +70,7 @@ public class GoodDealController implements IHttpServlet {
 	
 	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
-	LOGGER.info(resp.setViewContent("view/connection.jspr"));
+	LOGGER.info(resp.setViewContent("view/connection.jspr", req.getUrl().getHost()));
 	
     }
 
@@ -78,24 +79,26 @@ public class GoodDealController implements IHttpServlet {
 	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
 	ArrayList<String> adsList = new ArrayList<String>();
 	for(Ad ad : adsProvider.getAds()) {
-	    adsList.add(ad.getTitle() + "<s/><s/><s/><s/>" + ad.getPrice() + 
-		    "€<br/>" + ad.getContent() + "<br/><br/><br/>");
+	    adsList.add("<h3>" + ad.getTitle() + "</h3><b>Prix:" + ad.getPrice() + 
+		    "&euro;</b><br/><p>" + ad.getContent() + "</p><br/><br/>");
 	}
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addListViewAttribute("list", adsList);
-	LOGGER.info(resp.setViewContent("view/adsList.jspr"));
+	LOGGER.info(resp.setViewContent("view/adsList.jspr", req.getUrl().getHost()));
 	
     }
 
     private void getAdsService(IHttpRequest req, IHttpResponse resp) {
 
 	resp.addHeaderValue(HeaderResponseField.CONTENT_ENCODING, "application/json");
-	String body = new String("{ [");
+	StringBuilder body = new StringBuilder("{ [");
 	for(Ad ad : adsProvider.getAds()) {
-	    body += "{ title : \"" + ad.getTitle() + "\" , price : \"" 
-			+ ad.getPrice() + "€\" , content : \"" + ad.getContent() + "\" }";
+	    body.append("{ title : \"" + ad.getTitle() + "\" , price : \"" 
+			+ ad.getPrice() + "&euro;\" , content : \"" + ad.getContent() + "\" },");
 	}
-	resp.setBody(body + "] }");
+	body = body.deleteCharAt(body.length()-1);
+	body.append("] }");
+	resp.setBody(body.toString());
 	LOGGER.info(resp.getBody());
 	
     }
@@ -103,9 +106,17 @@ public class GoodDealController implements IHttpServlet {
     private void getAd(IHttpRequest req, IHttpResponse resp) {
 
 	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
-	Ad ad = adsProvider.getAd(getInd(req));
-	String text = ad.getTitle() + "<s/><s/><s/><s/>" + ad.getPrice() + "€<br/>" + ad.getContent();
-	callAdView("ad", resp, contentEncoding, text);
+	int id = getInd(req);
+	
+	if (!adsProvider.isExistingAd(id)) {
+	    LOGGER.info("Http Bad request");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	}
+	
+	Ad ad = adsProvider.getAd(id);
+	String text = ad.getTitle() + "<s/><s/><s/><s/>" + ad.getPrice() + "&euro;<br/>" + ad.getContent();
+	callAdMessageView(req.getUrl().getHost(), "Annonce", resp, contentEncoding, text);
 	
     }
 
@@ -113,9 +124,16 @@ public class GoodDealController implements IHttpServlet {
 
 	resp.addHeaderValue(HeaderResponseField.CONTENT_ENCODING, "application/json");
 	int id = getInd(req);
+	
+	if (!adsProvider.isExistingAd(id)) {
+	    LOGGER.info("Http Bad request");
+	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+	    return;
+	}
+	
 	Ad ad = adsProvider.getAd(id);
 	resp.setBody("{ title : \"" + ad.getTitle() + "\" , price : \"" 
-		+ ad.getPrice() + "€\" , content : \"" + ad.getContent() + "\" }");
+		+ ad.getPrice() + "&euro;\" , content : \"" + ad.getContent() + "\" }");
 	LOGGER.info(resp.getBody());
 	
     }
@@ -173,7 +191,7 @@ public class GoodDealController implements IHttpServlet {
 
 	}
 
-	callAdView("updateAd", resp, contentEncoding, text);
+	callAdMessageView(req.getUrl().getHost(), "Modification de l'annonce", resp, contentEncoding, text);
 
     }
 
@@ -226,13 +244,13 @@ public class GoodDealController implements IHttpServlet {
        
        if(username == null || password == null || username.isEmpty() || password.isEmpty()) {
 	   text = "Nom d'utilisateur ou mot de passe vide !";
-	   callAdView("connectionError", resp, contentEncoding, text);
+	   callAdMessageView(req.getUrl().getHost(), "Connection", resp, contentEncoding, text);
 	   return;
        }
        
        if(!usersProvider.isUser(username, password)) {
 	   text = "Nom d'utilisateur ou mot de passe invalide !";
-	   callAdView("connectionError", resp, contentEncoding, text);
+	   callAdMessageView(req.getUrl().getHost(), "Connection",  resp, contentEncoding, text);
 	   return;
        }
        
@@ -312,7 +330,7 @@ public class GoodDealController implements IHttpServlet {
 	    adsProvider.removeAd(id);
 	    text = "Ad seccessfully deleted";
 	}
-	callAdView("deleteAd", resp, contentEncoding, text);
+	callAdMessageView(req.getUrl().getHost(), "Suppression annonce", resp, contentEncoding, text);
 
     }
 
@@ -344,11 +362,12 @@ public class GoodDealController implements IHttpServlet {
 
     }
 
-    private void callAdView(String fileName, IHttpResponse resp, String contentEncoding, String text) {
+    private void callAdMessageView(String appName, String title, IHttpResponse resp, String contentEncoding, String text) {
 	
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
+	resp.addStringViewAttribute("title", title);
 	resp.addStringViewAttribute("text", text);
-	LOGGER.info(resp.setViewContent("view/" + fileName + ".jspr"));
+	LOGGER.info(resp.setViewContent("view/adMessage.jspr", appName));
 	
     }
 

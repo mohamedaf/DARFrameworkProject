@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+	<controller name="GoodDealController">
+		<path value="/login/*" method="GET" call="connection" />
+		<path value="/login/*" method="POST" call="connection" />
+		<path value="/ads/*" method="GET" call="getAdsList" />
+		<path value="/ads-service/*" method="GET" call="getAdsService" />
+		<path value="/\d+/ad/*" method="GET" call="getAd" />
+		<path value="/\d+/ad-service/*" method="GET" call="getAdService" />
+		<path value="/\d+/update-ad/*" method="PUT" call="updateAd"/>
+		<path value="/new-ad/*" method="POST" call="newAd" />
+		<path value="/\d+/delete-ad/*" method="DELETE" call="deleteAd" />
+	</controller>
+</application>

@@ -26,7 +26,7 @@ public class PointController implements IHttpServlet {
 	
 	switch (call.toLowerCase()) {
 	case "getpointlist":
-	    getPointList(resp);
+	    getPointList(resp, req.getUrl().getHost());
 	    break;
 	case "getpoint":
 	    getPoint(req, resp);
@@ -44,7 +44,7 @@ public class PointController implements IHttpServlet {
 	
     }
 
-    private void getPointList(IHttpResponse resp) {
+    private void getPointList(IHttpResponse resp, String appName) {
 	
 	LOGGER.info("GET getPointList");
 	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
@@ -58,7 +58,7 @@ public class PointController implements IHttpServlet {
 		listPoints.add(mapPoints.get(id).toString("text/html"));
 	    }
 	    resp.addListViewAttribute("list", listPoints);
-	    LOGGER.info(resp.setViewContent("view/listePoint.jspr"));
+	    LOGGER.info(resp.setViewContent("view/listePoint.jspr", appName));
 	    return;
 	}
 	resp.setBody(toString(contentType, contentEncoding));
@@ -79,7 +79,7 @@ public class PointController implements IHttpServlet {
 	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	    if(contentType.startsWith("text/html")) {
 		String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
-		callPointView(resp, contentEncoding, "Point:", p);
+		callPointView(resp, contentEncoding, req.getUrl().getHost(), "Point:", p);
 		return;
 	    }
 	    resp.setBody(p.toString(contentType));
@@ -110,7 +110,7 @@ public class PointController implements IHttpServlet {
 	
 	if (coord.equalsIgnoreCase("x")) {
 	    if(contentType.startsWith("text/html")) {
-		callPointView(resp, contentEncoding, "x =", p);
+		callPointView(resp, contentEncoding, req.getUrl().getHost(), "x =", p);
 		return;
 	    }
 	    String body = "x = " + p.getX();
@@ -118,7 +118,7 @@ public class PointController implements IHttpServlet {
 	    LOGGER.info(body);
 	} else if (coord.equalsIgnoreCase("y")) {
 	    if(contentType.startsWith("text/html")) {
-		callPointView(resp, contentEncoding, "y =", p);
+		callPointView(resp, contentEncoding, req.getUrl().getHost(), "y =", p);
 		return;
 	    }
 	    String body = "y = " + p.getY();
@@ -160,7 +160,8 @@ public class PointController implements IHttpServlet {
 	p.setY(Integer.parseInt(params.get("y")));
 	if(contentType.startsWith("text/html")) {
 	    String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
-	    callPointView(resp, contentEncoding, "This point has been modified, new value :", p);
+	    callPointView(resp, contentEncoding, req.getUrl().getHost(),
+		    "This point has been modified, new value :", p);
 	    return;
 	}
 	String body = "This point has been modified, new value : " + p.toString(contentType);
@@ -209,7 +210,7 @@ public class PointController implements IHttpServlet {
 	    String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	    if(contentType.startsWith("text/html")) {
 		String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
-		callPointView(resp, contentEncoding, "new Point created :", p);
+		callPointView(resp, contentEncoding, req.getUrl().getHost(), "new Point created :", p);
 		return;
 	    }
 	    String body = "new Point created : " + p.toString(contentType);
@@ -251,7 +252,7 @@ public class PointController implements IHttpServlet {
 	String contentType = resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE);
 	if(contentType.startsWith("text/html")) {
 	    String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
-	    callPointView(resp, contentEncoding, "Removed point :", p);
+	    callPointView(resp, contentEncoding, req.getUrl().getHost(), "Removed point :", p);
 	    return;
 	}
 	String body = "Removed point : " + p.toString(contentType);
@@ -270,11 +271,12 @@ public class PointController implements IHttpServlet {
 	
     }
     
-    private void callPointView(IHttpResponse resp, String contentEncoding, String text, Point p){
+    private void callPointView(IHttpResponse resp, String contentEncoding, 
+	    String appName, String text, Point p){
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addStringViewAttribute("text", text);
 	resp.addStringViewAttribute("point", p.toString("text/html"));
-	LOGGER.info(resp.setViewContent("view/point.jspr"));
+	LOGGER.info(resp.setViewContent("view/point.jspr", appName));
     }
     
     public String toString(String contentType, String contentEncoding) {

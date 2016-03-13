@@ -46,7 +46,7 @@ public class ViewProvider {
 		viewContent.append(line);
 	    }
 	} catch (IOException e) {
-	    LOGGER.warn("View not found {}", e);
+	    LOGGER.warn("View " + filePath + " not found {}", e);
 	}
 	return viewContent.toString();
 	

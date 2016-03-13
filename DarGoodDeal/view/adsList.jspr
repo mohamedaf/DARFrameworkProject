@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="{contentEncoding}"/>
+		<title>Toutes les annonces</title>
+	</head>
+	<body>
+		<p>{list}</p>
+	</body>
+</html>

@@ -32,8 +32,7 @@ import dispatcher.DispatcherResult;
 
 public class SocketThread extends Thread {
 
-    private static final Logger LOGGER = LoggerFactory
-	    .getLogger(SocketThread.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketThread.class);
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private final Dispatcher dispatcher;
@@ -74,16 +73,20 @@ public class SocketThread extends Thread {
 	    } else {
 		resp = new HttpResponse(HttpResponseStatus.Bad_Request, "text/plain", "Error 400 Bad Request");
 	    }
-	    socket.close();
 	} catch (Exception e) {
 	    resp = new HttpResponse(HttpResponseStatus.Internal_Server_Error, "text/plain", "Error 500 Internal Server Error");
 	    LOGGER.error("Internal Server Error ", e);
 	}
-
+	
 	LOGGER.info("Sending http response");
 	printWriter.write(resp.toString());
 	printWriter.flush();
 	printWriter.flush();
+	try {
+	    socket.close();
+	} catch (IOException e) {
+	    LOGGER.error("Error while closing connection socket ", e);
+	}
 
     }
 
@@ -140,11 +143,8 @@ public class SocketThread extends Thread {
 	    return;
 	}
 
-	if (result == null) {
-	    LOGGER.error("Internal Server Error, please check dispacher.xml file of {} app ", host);
-	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
+	if (result == null)
 	    return;
-	}
 
 	IHttpServlet servlet = result.getServlet();
 	String call = result.getCall();
@@ -160,8 +160,7 @@ public class SocketThread extends Thread {
     }
 
     private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req, IHttpResponse resp, String call) {
-	LOGGER.info("Controller dispatcher, method : {}, call : {}",
-		req.getMethod(), call);
+	LOGGER.info("Controller dispatcher, method : {}, call : {}", req.getMethod(), call);
 
 	if (req.getMethod().equals(HttpRequestMethod.GET)) {
 	    servlet.doGet(req, resp, call);

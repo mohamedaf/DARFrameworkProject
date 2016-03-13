@@ -13,7 +13,7 @@ public class AdsProvider {
     public boolean addAd(Ad ad) {
 	
 	if(ad != null &&  ad.getTitle() != null && ad.getPrice() > 0) {
-	    ads.add(ad);
+	    ads.add(0, ad);
 	    return true;
 	}
 	return false;

@@ -120,9 +120,9 @@ public class HttpResponse implements IHttpResponse {
 	viewProvider.addListAttribute(attribute, values);
     }
     
-    public String setViewContent(String filePath) {
+    public String setViewContent(String filePath, String appName) {
 	
-	String b = viewProvider.getViewContent(filePath, "point");
+	String b = viewProvider.getViewContent(filePath, appName);
 	this.setBody(b);
 	return b;
 	
