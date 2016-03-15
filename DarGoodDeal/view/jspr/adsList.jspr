@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="{contentEncoding}"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Toutes les annonces</title>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+	</head>
+	<body style="background-color: #e1d9ab;">
+		<div class="container"><section class="main"><form class="form">{list}</form>​​</section></div>
+	</body>
+</html>

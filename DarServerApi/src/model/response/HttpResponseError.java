@@ -16,5 +16,19 @@ public class HttpResponseError {
 	}
 
     }
+    
+    public static void setHttpBodyResponseError(IHttpResponse resp, HttpResponseStatus status) {
+
+	resp.setStatus(status);
+	if(resp.getHeaderValue(HeaderResponseField.CONTENT_TYPE).startsWith("text/html")) {
+	    String response = "<span style=\"color:red;\">" + "Error " + 
+		    status.getStatus() + " " + status.name() + "</span>";
+	    resp.setBody(response);
+	}
+	else {
+	    resp.setBody("Error " + status.getStatus() + " " + status.name());
+	}
+
+    }
 
 }

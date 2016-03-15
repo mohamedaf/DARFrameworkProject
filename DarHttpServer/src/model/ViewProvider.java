@@ -43,7 +43,7 @@ public class ViewProvider {
 	    String line;
 	    while ((line = br.readLine()) != null) {
 		line = treatLine(line);
-		viewContent.append(line);
+		viewContent.append(line + "\n");
 	    }
 	} catch (IOException e) {
 	    LOGGER.warn("View " + filePath + " not found {}", e);
@@ -61,7 +61,7 @@ public class ViewProvider {
 	    String value = stringAttributes.get(matcher.group(1));
 	    if(value == null) {
 		line = treatListAttribute(line, matcher);
-		// We have to rematch cause sentence changed
+		// We have to rematch if sentence changed
 		pattern.matcher(line);
 	    }
 	    else {
@@ -76,7 +76,7 @@ public class ViewProvider {
 	
 	List<String> values = listAttributes.get(matcher.group(1));
 	if(values == null || values.size() == 0) {
-	    return line.replace("{" + matcher.group(1) + "}", "");
+	    return line;
 	}
 	
 	String res = line;

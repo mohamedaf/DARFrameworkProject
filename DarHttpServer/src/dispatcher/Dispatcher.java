@@ -96,6 +96,14 @@ public class Dispatcher {
     private DispatcherResult checkPathNode(IHttpResponse resp,
 	    Element pathNode, Map<String, String> params) {
 	LOGGER.info("Checking path node");
+	
+	String call = pathNode.getAttributeValue("call");
+	if(call.matches(".+\\.js")) {
+	    return new DispatcherResult(null, call);
+	}
+	if(call.matches(".+\\.css")) {
+	    return new DispatcherResult(null, call);
+	}
 
 	if (checkQueryString(pathNode, params)) {
 	    String controllerName = pathNode.getParentElement().getAttributeValue("name");
@@ -105,7 +113,6 @@ public class Dispatcher {
 		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Internal_Server_Error);
 		return null;
 	    }
-	    String call = pathNode.getAttributeValue("call");
 	    return new DispatcherResult(servlet, call);
 	} else {
 	    LOGGER.warn("Http Bad request");

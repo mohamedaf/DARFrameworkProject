@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application>
 	<controller name="GoodDealController">
-		<path value="/login/*" method="GET" call="connection" />
-		<path value="/login/*" method="POST" call="connection" />
+		<path value="/*" method="GET" call="login" />
+		<path value="/login/*" method="GET" call="login" />
+		<path value="/login/*" method="POST" call="login" />
+		<path value="/new-ad/*" method="GET" call="newAd" />
+		<path value="/new-ad/*" method="POST" call="newAd" />
 		<path value="/ads/*" method="GET" call="getAdsList" />
 		<path value="/ads-service/*" method="GET" call="getAdsService" />
 		<path value="/\d+/ad/*" method="GET" call="getAd" />
+		<path value="/\d+/js/jquery.js/*" method="GET" call="view/js/jquery.js" />
+		<path value="/(\d+/)*css/style.css/*" method="GET" call="view/css/style.css" />
 		<path value="/\d+/ad-service/*" method="GET" call="getAdService" />
 		<path value="/\d+/update-ad/*" method="PUT" call="updateAd"/>
 		<path value="/new-ad/*" method="POST" call="newAd" />

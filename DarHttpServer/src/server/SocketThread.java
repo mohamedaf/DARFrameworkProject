@@ -19,6 +19,7 @@ import model.HttpSessionProvider;
 import model.request.HeaderRequestField;
 import model.request.HttpRequestMethod;
 import model.request.IHttpRequest;
+import model.response.HeaderResponseField;
 import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
@@ -71,10 +72,16 @@ public class SocketThread extends Thread {
 		checkSession(req, resp);
 		dispatcher(req, resp);
 	    } else {
-		resp = new HttpResponse(HttpResponseStatus.Bad_Request, "text/plain", "Error 400 Bad Request");
+		String response = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/>"
+		    	+ "<title>Http Error</title></head><body><span style=\"color:red;\">"
+		    	+ "Error 400 Bad Request</span></body></html>";
+		resp = new HttpResponse(HttpResponseStatus.Bad_Request, "text/html", response);
 	    }
 	} catch (Exception e) {
-	    resp = new HttpResponse(HttpResponseStatus.Internal_Server_Error, "text/plain", "Error 500 Internal Server Error");
+	    String response = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/>"
+		    	+ "<title>Http Error</title></head><body><span style=\"color:red;\">"
+		    	+ "Error 500 Internal Server Error</span></body></html>";
+	    resp = new HttpResponse(HttpResponseStatus.Internal_Server_Error, "text/html", response);
 	    LOGGER.error("Internal Server Error ", e);
 	}
 	
@@ -148,15 +155,58 @@ public class SocketThread extends Thread {
 
 	IHttpServlet servlet = result.getServlet();
 	String call = result.getCall();
-
-	if (servlet == null || call == null) {
+	
+	if(servlet == null && call != null && call.matches(".+\\.js")) {
+	    setJsReponse(resp, host, call);
+	} else if(servlet == null && call != null && call.matches(".+\\.css")) {
+	    setCssReponse(resp, host, call);
+	} else if (servlet == null || call == null) {
 	    LOGGER.warn("Server or call is null, Http not found");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Not_Found);
-	    return;
+	} else {
+	    controllerDispatcher(servlet, req, resp, call);
 	}
 
-	controllerDispatcher(servlet, req, resp, call);
-
+    }
+    
+    private void setJsReponse(IHttpResponse resp, String appName, String call) {
+	LOGGER.info("Reading javaScript file {}", call);
+	
+	StringBuilder scriptContent = new StringBuilder();
+	try {
+	    URL url = new URL("jar:file:" + System.getProperty("user.dir") + 
+		    "/apps/" + appName + ".jar!/" + call);
+	    BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+	    String line;
+	    while ((line = br.readLine()) != null) {
+		scriptContent.append(line + "\n");
+	    }
+	} catch (IOException e) {
+	    LOGGER.warn("javaScript file " + call + " not found {}", e);
+	}
+	resp.addHeaderValue(HeaderResponseField.CONTENT_TYPE, "application/javascript");
+	resp.setBody(scriptContent.toString());
+	
+    }
+    
+    private void setCssReponse(IHttpResponse resp, String appName, String call) {
+	LOGGER.info("Reading javaScript file {}", call);
+	
+	StringBuilder scriptContent = new StringBuilder();
+	try {
+	    URL url = new URL("jar:file:" + System.getProperty("user.dir") + 
+		    "/apps/" + appName + ".jar!/" + call);
+	    BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+	    String line;
+	    while ((line = br.readLine()) != null) {
+		scriptContent.append(line + "\n");
+	    }
+	} catch (IOException e) {
+	    LOGGER.warn("javaScript file " + call + " not found {}", e);
+	}
+	resp.addHeaderValue(HeaderResponseField.CONTENT_TYPE, "text/css");
+	resp.setBody(scriptContent.toString());
+	
     }
 
     private void controllerDispatcher(IHttpServlet servlet, IHttpRequest req, IHttpResponse resp, String call) {

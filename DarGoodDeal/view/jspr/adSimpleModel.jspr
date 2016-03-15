@@ -2,9 +2,11 @@
 <html>
 	<head>
 		<meta charset="{contentEncoding}"/>
-		<title>Toutes les annonces</title>
+		<title>{title}</title>
 	</head>
-	<body>
-		<p>{list}</p>
+	<body style="background-color: #e1d9ab;">
+		<p>
+			{text}
+		</p>
 	</body>
 </html>
