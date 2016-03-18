@@ -33,6 +33,10 @@ public class HttpSession {
     public Object getValue(String name) {
 	return variables.get(name);
     }
+    
+    public void removeValue(String name) {
+	variables.remove(name);
+    }
 
     public String getKey() {
 	return key;

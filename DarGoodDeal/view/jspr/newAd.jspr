@@ -4,6 +4,12 @@
 	 	<title>New ad</title>
 	</head>
 	<body style="background-color: #e1d9ab;">
+		 <ul>
+			<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
+			<li class="active"><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>
+		 	<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
+		 	<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
+		 </ul>
 		 <div>
 		 	<h1>New ad informations</h1>
 		 	<form method="post" action="http://localhost:1024/good-deal/new-ad">

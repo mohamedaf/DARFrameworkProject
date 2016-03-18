@@ -48,6 +48,10 @@ public class GoodDealController implements IHttpServlet {
 	    LOGGER.info("GET login");
 	    getLogin(req, resp);
 	    break;
+	case "logout":
+	    LOGGER.info("GET logout");
+	    getLogout(req, resp);
+	    break;
 	case "newad":
 	    LOGGER.info("GET newAd");
 	    getNewAd(req, resp);
@@ -83,6 +87,21 @@ public class GoodDealController implements IHttpServlet {
 	if (user != null) {
 	    doGet(req, resp, "getAdsList");
 	    return;
+	}
+	
+	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
+	resp.addStringViewAttribute("contentEncoding", contentEncoding);
+	LOGGER.info(resp.setViewContent("view/jspr/login.jspr", req.getUrl().getHost()));
+	
+    }
+    
+    private void getLogout(IHttpRequest req, IHttpResponse resp) {
+	
+	HttpSession session = req.getSession();
+	User user = (User) session.getValue("user");
+
+	if (user != null) {
+	    session.removeValue("user");
 	}
 	
 	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);

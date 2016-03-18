@@ -11,6 +11,12 @@
 	<body style="background-color: #e1d9ab;">
 		<div class="container">
 			<section class="main">
+				<ul>
+				  <li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
+				  <li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>
+				  <li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
+				  <li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
+				</ul>
 				<form class="form">
 					<h1><span class="log-in">{adTitle}</span></h1>
 					<p class="float">
@@ -29,17 +35,27 @@
 		<script>
 		  	$(document).ready(function(){
 		  		$("#update").click(function(){
-			        $("body").html("<div style="margin-left:35%">" +
-									  "<h1>New ad informations</h1>" +
-									  "<form>" +
-									   	"<p><input type=\"text\" name=\"title\" placeholder=\"Title\" value=\"{adTitle}\"></p>" +
-									 	"<p><input type=\"text\" name=\"price\" placeholder=\"Price\" value=\"{price}\"></p>" +
-									 	"<p><textarea name=\"content\" rows=\"20\" cols=\"70\" value=\"{content}\"></textarea></p>" +
-									   	"<p><span>" +
-										   	"<button id=\"updSub\">Valid</button>" +
-										   	"<button id=\"cancel\" style=\"margin-left:10px\">Cancel</button>" +
-										"</span></p>" +
-									  "</form>" +
+			        $("body").html("<div class=\"container\">" +
+									  "<section class=\"main\">" +
+									  	  "<ul>" +
+										    "<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>" +
+										    "<li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>" +
+										    "<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>" +
+										    "<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>" +
+										  "</ul>" +
+									  	  "<h1 style=\"margin-left: 42%\">New ad informations</h1>" +
+										  "<form class=\"form\">" +
+										   	"<p><label for=\"title\">Title </label><input type=\"text\" name=\"title\" placeholder=\"Title\" value=\"{adTitle}\"></p>" +
+										 	"<p><label for=\"price\">Price </label><input type=\"text\" name=\"price\" placeholder=\"Price\" value=\"{price}\"></p>" +
+										 	"<p><textarea name=\"content\" rows=\"20\" cols=\"65\">{content}</textarea></p>" +
+										   	"<p><span>" +
+										   		"<p class=\"clearfix\">" +
+							                        "<input type=\"submit\" id=\"updSub\" value=\"Validate\"/>" +
+													"<input type=\"button\" id=\"cancel\" value=\"Cancel\"/>" +
+												"</p>" +
+											"</span></p>" +
+										  "</form>" +
+										"</section>" +
 									"</div>");
 			    });
 			    $("#delete").click(function(){
@@ -66,13 +82,28 @@
 			    	return false;
 			    });
 			    $("body").on("click", "#cancel", function(){
-			        $("body").html("<p>" +
-										"<h3>{adTitle}</h3><b>Price:{price} EUR</b><br/><p>{content}</p>" +
-										"<span>" +
-											"<button id=\"update\">Update</button>" +
-											"<button id=\"delete\" style=\"margin-left:10px\">Delete</button>" +
-										"</span>" +
-									"</p>");
+			        $("body").html( "<div class=\"container\">" +
+										"<section class=\"main\">" +
+											"<ul>" +
+											    "<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>" +
+											    "<li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>" +
+											    "<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>" +
+											    "<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>" +
+											"</ul>" +
+											"<form class=\"form\">" +
+												"<h1><span class=\"log-in\">{adTitle}</span></h1>" +
+												"<p class=\"float\">" +
+							                        "<b>{price} EUR</b>" +
+							                        "</br>" +
+							                        "{content}" +
+												"</p>" +
+												"<p class=\"clearfix\">" +
+							                        "<input type=\"button\" id=\"update\" value=\"Update\"/>" +
+													"<input type=\"button\" id=\"delete\" value=\"Delete\"/>" +
+												"</p>" +
+											"</form>​​" +
+										"</section>" +
+							        "</div>");
 			    });
 			});
 		</script>

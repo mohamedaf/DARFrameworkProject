@@ -4,6 +4,7 @@
 		<path value="/*" method="GET" call="login" />
 		<path value="/login/*" method="GET" call="login" />
 		<path value="/login/*" method="POST" call="login" />
+		<path value="/logout/*" method="GET" call="logout" />
 		<path value="/new-ad/*" method="GET" call="newAd" />
 		<path value="/new-ad/*" method="POST" call="newAd" />
 		<path value="/ads/*" method="GET" call="getAdsList" />
