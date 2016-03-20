@@ -42,7 +42,9 @@ public class ViewProvider {
 	    BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 	    String line;
 	    while ((line = br.readLine()) != null) {
+		System.out.println("before: " + line);
 		line = treatLine(line);
+		System.out.println("after: " + line);
 		viewContent.append(line + "\n");
 	    }
 	} catch (IOException e) {

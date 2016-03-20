@@ -2,22 +2,35 @@
 	<head>
 		<meta charset="{contentEncoding}"/>
 	 	<title>New ad</title>
+	 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	</head>
 	<body style="background-color: #e1d9ab;">
-		 <ul>
-			<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
-			<li class="active"><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>
-		 	<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
-		 	<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
-		 </ul>
-		 <div>
-		 	<h1>New ad informations</h1>
-		 	<form method="post" action="http://localhost:1024/good-deal/new-ad">
-		      <p><input type="text" name="title" placeholder="Title"></p>
-		 	  <p><input type="text" name="price" placeholder="Price"></p>
-		 	  <p><textarea name="content" rows="20" cols="70"></textarea></p>
-		   	  <p><input type="submit" value="valid"></p>
-		   	</form>
-		 </div>
+		<div class="container">
+			<section class="main">
+				 <ul>
+					<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
+					<li class="active"><a href="http://localhost:1024/good-deal/new-ad">New Ad</a></li>
+				 	<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
+				 	<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
+				 </ul>
+				 <form class="form" method="post" action="http://localhost:1024/good-deal/new-ad">
+					<h1><span class="log-in">New ad informations</span></h1>
+					<p class="float">
+						<label for="title"><b>Title</b></label>
+						<input type="text" name="title" placeholder="Title">
+					</p>
+					<p class="float">
+						<label for="price"><b>Price</b></label>
+						<input type="text" name="price" placeholder="Price">
+					</p>
+					<p class="float">
+						<textarea name="content" rows="20" cols="65"></textarea>
+					</p>
+					<p class="clearfix">
+						<input type="submit" value="valid" style="margin-left:25%">
+					</p>
+				</form>​​
+			</section>
+        </div>
 	</body>
 </html>

@@ -30,4 +30,5 @@ public interface IHttpResponse {
     public void addListViewAttribute(String attribute, List<String> values);
     
     public String setViewContent(String filePath, String appName);
+    
 }

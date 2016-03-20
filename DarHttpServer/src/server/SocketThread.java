@@ -40,8 +40,7 @@ public class SocketThread extends Thread {
     private final HttpSessionProvider sessionProvider;
     private final Socket socket;
 
-    public SocketThread(Socket socket, Dispatcher dispatcher,
-	    HttpSessionProvider sessionProvider) {
+    public SocketThread(Socket socket, Dispatcher dispatcher, HttpSessionProvider sessionProvider) {
 
 	super();
 	LOGGER.info("new Socket Thread");

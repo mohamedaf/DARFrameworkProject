@@ -13,7 +13,7 @@
 			<section class="main">
 				<ul>
 				  <li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
-				  <li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>
+				  <li><a href="http://localhost:1024/good-deal/new-ad">New Ad</a></li>
 				  <li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
 				  <li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
 				</ul>
@@ -38,10 +38,10 @@
 			        $("body").html("<div class=\"container\">" +
 									  "<section class=\"main\">" +
 									  	  "<ul>" +
-										    "<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>" +
-										    "<li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>" +
-										    "<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>" +
-										    "<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>" +
+										    "<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>" +
+										    "<li><a href=\"http://localhost:1024/good-deal/newAd\">New Ad</a></li>" +
+										    "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/logout\">Logout</a></li>" +
+										    "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/login\">Login</a></li>" +
 										  "</ul>" +
 									  	  "<h1 style=\"margin-left: 42%\">New ad informations</h1>" +
 										  "<form class=\"form\">" +
@@ -50,8 +50,7 @@
 										 	"<p><textarea name=\"content\" rows=\"20\" cols=\"65\">{content}</textarea></p>" +
 										   	"<p><span>" +
 										   		"<p class=\"clearfix\">" +
-							                        "<input type=\"submit\" id=\"updSub\" value=\"Validate\"/>" +
-													"<input type=\"button\" id=\"cancel\" value=\"Cancel\"/>" +
+							                        "<input type=\"submit\" id=\"updSub\" value=\"Validate\" style=\"margin-left:25%\"/>" +
 												"</p>" +
 											"</span></p>" +
 										  "</form>" +
@@ -80,30 +79,6 @@
 			        	success: function(result){$("body").html(result);}
 			        });
 			    	return false;
-			    });
-			    $("body").on("click", "#cancel", function(){
-			        $("body").html( "<div class=\"container\">" +
-										"<section class=\"main\">" +
-											"<ul>" +
-											    "<li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>" +
-											    "<li><a href="http://localhost:1024/good-deal/newAd">New Ad</a></li>" +
-											    "<li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>" +
-											    "<li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>" +
-											"</ul>" +
-											"<form class=\"form\">" +
-												"<h1><span class=\"log-in\">{adTitle}</span></h1>" +
-												"<p class=\"float\">" +
-							                        "<b>{price} EUR</b>" +
-							                        "</br>" +
-							                        "{content}" +
-												"</p>" +
-												"<p class=\"clearfix\">" +
-							                        "<input type=\"button\" id=\"update\" value=\"Update\"/>" +
-													"<input type=\"button\" id=\"delete\" value=\"Delete\"/>" +
-												"</p>" +
-											"</form>​​" +
-										"</section>" +
-							        "</div>");
 			    });
 			});
 		</script>

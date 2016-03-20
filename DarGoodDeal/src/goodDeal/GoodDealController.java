@@ -28,6 +28,12 @@ public class GoodDealController implements IHttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(GoodDealController.class);
     private final AdsProvider adsProvider;
     private final UsersProvider usersProvider;
+    private final String navTab = "<ul>\n" +
+                                	"<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>\n" +
+                                	"<li><a href=\"http://localhost:1024/good-deal/new-ad\">New Ad</a></li>\n" +
+                                	"<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/logout\">Logout</a></li>\n" +
+                                	"<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/login\">Login</a></li>\n" +
+                                  "</ul>\n";
 
     public GoodDealController() {
 
@@ -115,7 +121,7 @@ public class GoodDealController implements IHttpServlet {
 	HttpSession session = req.getSession();
 	User user = (User) session.getValue("user");
 
-	if (user != null) {
+	if (user == null) {
 	    doGet(req, resp, "login");
 	    return;
 	}
@@ -224,7 +230,7 @@ public class GoodDealController implements IHttpServlet {
 	String text = new String();
 
 	if (user == null) {
-	    resp.setBody("<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
+	    resp.setBody(navTab + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
 		    	+ "ce lien</a> pour vous connecter, puis renouvelez l'action</b>");
 	    LOGGER.info(resp.getBody());
 	    return;
@@ -349,10 +355,12 @@ public class GoodDealController implements IHttpServlet {
 	    return;
 	}
 
+	String contentEncoding = resp.getHeaderValue(HeaderResponseField.CONTENT_ENCODING);
 	Map<String, String> reqParams = req.getParams();
 	String title = reqParams.get("title");
 	String content = reqParams.get("content");
 	String price = reqParams.get("price");
+	String text = "";
 
 	if (title == null || content == null || price == null) {
 	    LOGGER.info("Http Bad request");
@@ -365,12 +373,15 @@ public class GoodDealController implements IHttpServlet {
 		Ad ad = new Ad(user, title, content, Integer.parseInt(price));
 		adsProvider.addAd(ad);
 		doGet(req, resp, "getadslist");
+		return;
 	    } catch (NumberFormatException e) {
-		LOGGER.info("Http Bad request");
-		HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
+		text = "Le champs price doit contenir un nombre.";
 	    }
+	} else {
+	    text = "Tous les champs doivent êtres remplis.";
 	}
 
+	callAdSimpleModelView(req.getUrl().getHost(), "New Ad",  resp, contentEncoding, text);
     }
 
     @Override
@@ -396,7 +407,7 @@ public class GoodDealController implements IHttpServlet {
 	String text = new String();
 
 	if (user == null) {
-	    resp.setBody("<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
+	    resp.setBody(navTab + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
 	    	+ "ce lien</a> pour vous connecter, puis renouvelez l'action</b>");
 	    LOGGER.info(resp.getBody());
 	    return;
@@ -408,12 +419,12 @@ public class GoodDealController implements IHttpServlet {
 	    return;
 	} else if (!adsProvider.isAdPocessor(user, id)) {
 	    Ad ad = adsProvider.getAd(id);
-	    text = "<b>Your are not the ad pocessor, then you cannot delete it</b>" 
+	    text = navTab + "<b>Your are not the ad pocessor, then you cannot delete it</b>\n" 
 		    + "<p><h3>" + ad.getTitle() + "</h3><b>Price:" + ad.getPrice() 
-		    + " EUR</b><br/><p>" + ad.getContent() + "</p></p>";
+		    + " EUR</b><br/>\n<p>" + ad.getContent() + "</p></p>\n";
 	} else {
 	    adsProvider.removeAd(id);
-	    text = "<b>Ad seccessfully deleted</b>";
+	    text = navTab + "<b>Ad seccessfully deleted</b>";
 	}
 	resp.setBody(text);
 	LOGGER.info(resp.getBody());

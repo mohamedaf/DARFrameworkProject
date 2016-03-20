@@ -14,18 +14,6 @@ public class HttpSessionProvider {
 	appSessions = new HashMap<String, List<HttpSession>>();
     }
     
-    public void addSession(String appName, HttpSession session) {
-	
-	if(!appSessions.containsKey(appName)) {
-	    appSessions.put(appName, new ArrayList<HttpSession>());
-	}
-	
-	List<HttpSession> sessionList = appSessions.get(appName);
-	if(!sessionList.contains(session))
-	    sessionList.add(session);
-	
-    }
-    
     public void checkSessions() {
 	
 	for(String appName : appSessions.keySet()) {
@@ -53,6 +41,28 @@ public class HttpSessionProvider {
 	if(appName != null && key != null) {
 	    addSession(appName, key, 1200000);
 	}
+	
+    }
+    
+    private void addSession(String appName, HttpSession session) {
+	
+	if(!appSessions.containsKey(appName)) {
+	    appSessions.put(appName, new ArrayList<HttpSession>());
+	}
+	
+	List<HttpSession> sessionList = appSessions.get(appName);
+	if(sessionList.contains(session)) {
+	    /**
+	     * We have to replace this session, equals method compare between keys, 
+	     * then maybe it's the same session but with different values (variables, timeout ..)
+	     */
+	    for(HttpSession s : sessionList) {
+		if(s.equals(session)) {
+		    sessionList.remove(s);
+		}
+	    }
+	}
+	sessionList.add(session);
 	
     }
     
