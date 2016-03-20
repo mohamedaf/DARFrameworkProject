@@ -39,10 +39,21 @@ public class GoodDealController implements IHttpServlet {
 
 	adsProvider = new AdsProvider();
 	usersProvider = new UsersProvider();
-	usersProvider.addUser(new User("testuser1", "test"));
-	usersProvider.addUser(new User("testuser2", "test"));
-	adsProvider.addAd(new Ad(usersProvider.getUser("testuser1", "test"), "Annonce test 1", "Content 1", 260));
-	adsProvider.addAd(new Ad(usersProvider.getUser("testuser2", "test"), "Annonce test 2", "Content 2", 60));
+	User user = new User("user@upmc.fr", "test");
+	usersProvider.addUser(user);
+	adsProvider.addAd(new Ad(user, "Restaurant Kebab 'Le royaume des gros bides'", "Bonjour,</br></br>"
+		+ "Je met en vente mon restaurant Kebab hérité de père en fils depuis 3 générations !"
+		+ "Nous fournissons le restaurant avec l'ensemble des recettes encestrale, "
+		+ "qu'on maitrise et qui attire beaucoup de clientèles.</br>"
+		+ "Raison de vente, à force de travailler AAGA je n'ai plus le temps "
+		+ "de m'en occuper, je m'en sépare donc avec tristesse.</br>"
+		+ "Condition de vente, maitre kebabiste diplomé (pas de kababs surgelés).</br></br>"
+		+ "Cordialement", 80000));
+	adsProvider.addAd(new Ad(user, "Samsung Galaxy S6", "Bonjour,"
+		+ "</br></br>Je met en vente mon téléphone en excellent état pour "
+		+ "cause d'un passage sur Iphone 6s, le téléphone est toujours "
+		+ "en cours de garantie facture à l'appui, veuillez me joindre "
+		+ "pour plus de détails.</br></br>Cordialement", 300));
 	
     }
 
@@ -140,8 +151,9 @@ public class GoodDealController implements IHttpServlet {
 	    adsList.add("<a href=\"http://localhost:1024/" + req.getUrl().getHost()
 		    	+ "/" + ad.getId() + "/ad\"><h1><span class=\"log-in\">" 
 		    	+ ad.getTitle() + "</span></h1></a><p class=\"float\"><b>" 
-		    	+ ad.getPrice() + "EUR</b></p><p class=\"clearfix\">" 
-		    	+ ad.getContent() + "</p>");
+		    	+ ad.getPrice() + "EUR</b></br><b>Contact: "
+		    	+ ad.getUser().getUsername() + "</b></br></p>"
+		    	+ "<p class=\"clearfix\"></br>" + ad.getContent() + "</p>");
 	}
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addListViewAttribute("list", adsList);
@@ -151,11 +163,13 @@ public class GoodDealController implements IHttpServlet {
 
     private void getAdsService(IHttpRequest req, IHttpResponse resp) {
 
-	resp.addHeaderValue(HeaderResponseField.CONTENT_ENCODING, "application/json");
+	resp.addHeaderValue(HeaderResponseField.CONTENT_TYPE, "application/json");
 	StringBuilder body = new StringBuilder("{ [");
 	for(Ad ad : adsProvider.getAds()) {
 	    body.append("{ title : \"" + ad.getTitle() + "\" , price : \"" 
-			+ ad.getPrice() + " EUR\" , content : \"" + ad.getContent() + "\" },");
+			+ ad.getPrice() + " EUR\" , contact : \"" 
+			+ ad.getUser().getUsername() + "\" ,  "
+			+ "content : \"" + ad.getContent() + "\" },");
 	}
 	body = body.deleteCharAt(body.length()-1);
 	body.append("] }");
@@ -180,6 +194,7 @@ public class GoodDealController implements IHttpServlet {
 	resp.addStringViewAttribute("title", "Annonce " + ad.getId());
 	resp.addStringViewAttribute("adTitle", ad.getTitle());
 	resp.addStringViewAttribute("price", String.valueOf(ad.getPrice()));
+	resp.addStringViewAttribute("username", ad.getUser().getUsername());
 	resp.addStringViewAttribute("content", ad.getContent());
 	resp.addStringViewAttribute("adId", String.valueOf(ad.getId()));
 	LOGGER.info(resp.setViewContent("view/jspr/ad.jspr", req.getUrl().getHost()));
@@ -189,7 +204,7 @@ public class GoodDealController implements IHttpServlet {
 
     private void getAdService(IHttpRequest req, IHttpResponse resp) {
 
-	resp.addHeaderValue(HeaderResponseField.CONTENT_ENCODING, "application/json");
+	resp.addHeaderValue(HeaderResponseField.CONTENT_TYPE, "application/json");
 	int id = getInd(req);
 	
 	if (!adsProvider.isExistingAd(id)) {
@@ -200,7 +215,9 @@ public class GoodDealController implements IHttpServlet {
 	
 	Ad ad = adsProvider.getAd(id);
 	resp.setBody("{ title : \"" + ad.getTitle() + "\" , price : \"" 
-		+ ad.getPrice() + " EUR\" , content : \"" + ad.getContent() + "\" }");
+		+ ad.getPrice() + " EUR\" , contact : \"" 
+		+ ad.getUser().getUsername() + "\" ,  "
+		+ "content : \"" + ad.getContent() + "\" }");
 	LOGGER.info(resp.getBody());
 	
     }

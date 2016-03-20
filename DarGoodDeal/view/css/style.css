@@ -82,6 +82,7 @@
 }
 
 .form input[type=text],
+.form input[type=email],
 .form input[type=password] {
     font-family: 'Lato', Calibri, Arial, sans-serif;
     font-size: 13px;
@@ -100,6 +101,7 @@
 }
 
 .form input[type=text]:hover,
+.form input[type=email]:hover,
 .form input[type=password]:hover {
     border-color: #CCC;
 }
@@ -109,6 +111,7 @@
 }
 
 .form input[type=text]:focus,
+.form input[type=email]:focus,
 .form input[type=password]:focus {
     border-color: #BBB;
     outline: none; /* Remove Chrome's outline */

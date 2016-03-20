@@ -101,7 +101,7 @@ public class HttpResponse implements IHttpResponse {
     }
 
     public void setBody(String body) {
-	
+
 	this.body = body;
 	if (body != null)
 	    setContentLength(body.length());

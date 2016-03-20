@@ -21,10 +21,10 @@
 					<h1><span class="log-in">{adTitle}</span></h1>
 					<p class="float">
                         <b>{price} EUR</b>
-                        </br>
-                        {content}
+                        </br><b>Contact: {username}</b></br>
 					</p>
 					<p class="clearfix">
+						</br>{content}</br></br>
                         <input type="button" id="update" value="Update"/>
 						<input type="button" id="delete" value="Delete"/>
 					</p>

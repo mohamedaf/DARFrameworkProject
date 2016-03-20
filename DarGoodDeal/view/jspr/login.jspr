@@ -14,7 +14,7 @@
 					<h1><span class="log-in">Log in</span></h1>
 					<p class="float">
 						<label for="username"><b>Username</b></label>
-						<input type="text" name="username" placeholder="Username">
+						<input type="email" name="username" placeholder="email">
 					</p>
 					<p class="float">
 						<label for="password"><b>Password</b></label>

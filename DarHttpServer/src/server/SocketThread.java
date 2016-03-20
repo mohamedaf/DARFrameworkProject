@@ -84,14 +84,14 @@ public class SocketThread extends Thread {
 	    LOGGER.error("Internal Server Error ", e);
 	}
 	
-	LOGGER.info("Sending http response");
-	printWriter.write(resp.toString());
-	printWriter.flush();
-	printWriter.flush();
 	try {
+	    LOGGER.info("Sending http response");
+	    printWriter.write(resp.toString());
+	    printWriter.flush();
+	    printWriter.flush();
 	    socket.close();
 	} catch (IOException e) {
-	    LOGGER.error("Error while closing connection socket ", e);
+	    LOGGER.error("Error while sending HTTP reponse, or while closing socket", e);
 	}
 
     }
