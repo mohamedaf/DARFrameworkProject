@@ -28,12 +28,16 @@ public class GoodDealController implements IHttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(GoodDealController.class);
     private final AdsProvider adsProvider;
     private final UsersProvider usersProvider;
-    private final String navTab = "<ul>\n" +
-                                	"<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>\n" +
-                                	"<li><a href=\"http://localhost:1024/good-deal/new-ad\">New Ad</a></li>\n" +
-                                	"<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/logout\">Logout</a></li>\n" +
-                                	"<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/login\">Login</a></li>\n" +
-                                  "</ul>\n";
+    private final String navTabLogin = "<ul>\n" +
+                                            "<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>\n" +
+                                            "<li><a href=\"http://localhost:1024/good-deal/new-ad\">New Ad</a></li>\n" +
+                                            "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/login\">Login</a></li>\n" +
+                                	"</ul>\n";
+    private final String navTabLogout = "<ul>\n" +
+                                            "<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>\n" +
+                                            "<li><a href=\"http://localhost:1024/good-deal/new-ad\">New Ad</a></li>\n" +
+                                            "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/logout\">Logout</a></li>\n" +
+                                	"</ul>\n";
 
     public GoodDealController() {
 
@@ -155,6 +159,15 @@ public class GoodDealController implements IHttpServlet {
 		    	+ ad.getUser().getUsername() + "</b></br></p>"
 		    	+ "<p class=\"clearfix\"></br>" + ad.getContent() + "</p>");
 	}
+	
+	HttpSession session = req.getSession();
+	User user = (User) session.getValue("user");
+	if (user == null) {
+	    resp.addStringViewAttribute("log", "Login");
+	} else {
+	    resp.addStringViewAttribute("log", "Logout");
+	}
+	
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addListViewAttribute("list", adsList);
 	LOGGER.info(resp.setViewContent("view/jspr/adsList.jspr", req.getUrl().getHost()));
@@ -187,6 +200,14 @@ public class GoodDealController implements IHttpServlet {
 	    LOGGER.info("Http Bad request");
 	    HttpResponseError.setHttpResponseError(resp, HttpResponseStatus.Bad_Request);
 	    return;
+	}
+	
+	HttpSession session = req.getSession();
+	User user = (User) session.getValue("user");
+	if (user == null) {
+	    resp.addStringViewAttribute("log", "Login");
+	} else {
+	    resp.addStringViewAttribute("log", "Logout");
 	}
 	
 	Ad ad = adsProvider.getAd(id);
@@ -247,7 +268,7 @@ public class GoodDealController implements IHttpServlet {
 	String text = new String();
 
 	if (user == null) {
-	    resp.setBody(navTab + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
+	    resp.setBody(navTabLogin + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
 		    	+ "ce lien</a> pour vous connecter, puis renouvelez l'action</b>");
 	    LOGGER.info(resp.getBody());
 	    return;
@@ -277,7 +298,7 @@ public class GoodDealController implements IHttpServlet {
 
 	}
 
-	callAdSimpleModelView(req.getUrl().getHost(), "Modification de l'annonce", resp, contentEncoding, text);
+	callAdSimpleModelView(req.getUrl().getHost(), "Modification de l'annonce", req.getSession(), resp, contentEncoding, text);
 
     }
 
@@ -332,28 +353,28 @@ public class GoodDealController implements IHttpServlet {
        
        if(username == null || password == null || username.isEmpty() || password.isEmpty()) {
 	   text = "Nom d'utilisateur ou mot de passe vide !";
-	   callAdSimpleModelView(req.getUrl().getHost(), "Login", resp, contentEncoding, text);
+	   callAdSimpleModelView(req.getUrl().getHost(), "Login", req.getSession(), resp, contentEncoding, text);
 	   return;
        }
        
        if(reqParams.containsKey("submitUp")) {
 	   if(usersProvider.isUser(username, password)) {
 	       text = "Utilisateur déjà exitant ! Veuillez fournir un username différent.";
-	       callAdSimpleModelView(req.getUrl().getHost(), "Login",  resp, contentEncoding, text);
+	       callAdSimpleModelView(req.getUrl().getHost(), "Login", req.getSession(),  resp, contentEncoding, text);
 	       return;
 	   } else {
 	       usersProvider.addUser(new User(username, password));
 	       text = "Félicitation vous êtes maintenant inscrits, vous pouvez "
 	       	+ "vous connectez en cliquant "
 	       	+ "<a href=\"http://localhost:1024/good-deal/login\">ici</a>";
-	       callAdSimpleModelView(req.getUrl().getHost(), "Login",  resp, contentEncoding, text);
+	       callAdSimpleModelView(req.getUrl().getHost(), "Login", req.getSession(), resp, contentEncoding, text);
 	       return;
 	   }
        }
        
        if(!usersProvider.isUser(username, password)) {
 	   text = "Nom d'utilisateur ou mot de passe invalide !";
-	   callAdSimpleModelView(req.getUrl().getHost(), "Login",  resp, contentEncoding, text);
+	   callAdSimpleModelView(req.getUrl().getHost(), "Login", req.getSession(), resp, contentEncoding, text);
 	   return;
        }
        
@@ -398,7 +419,7 @@ public class GoodDealController implements IHttpServlet {
 	    text = "Tous les champs doivent êtres remplis.";
 	}
 
-	callAdSimpleModelView(req.getUrl().getHost(), "New Ad",  resp, contentEncoding, text);
+	callAdSimpleModelView(req.getUrl().getHost(), "New Ad", req.getSession(), resp, contentEncoding, text);
     }
 
     @Override
@@ -424,7 +445,7 @@ public class GoodDealController implements IHttpServlet {
 	String text = new String();
 
 	if (user == null) {
-	    resp.setBody(navTab + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
+	    resp.setBody(navTabLogin + "<b>Veuillez cliquer sur <a href=\"http://localhost:1024/good-deal/login\">"
 	    	+ "ce lien</a> pour vous connecter, puis renouvelez l'action</b>");
 	    LOGGER.info(resp.getBody());
 	    return;
@@ -436,12 +457,12 @@ public class GoodDealController implements IHttpServlet {
 	    return;
 	} else if (!adsProvider.isAdPocessor(user, id)) {
 	    Ad ad = adsProvider.getAd(id);
-	    text = navTab + "<b>Your are not the ad pocessor, then you cannot delete it</b>\n" 
+	    text = navTabLogout + "<b>Your are not the ad pocessor, then you cannot delete it</b>\n" 
 		    + "<p><h3>" + ad.getTitle() + "</h3><b>Price:" + ad.getPrice() 
 		    + " EUR</b><br/>\n<p>" + ad.getContent() + "</p></p>\n";
 	} else {
 	    adsProvider.removeAd(id);
-	    text = navTab + "<b>Ad seccessfully deleted</b>";
+	    text = navTabLogout + "<b>Ad seccessfully deleted</b>";
 	}
 	resp.setBody(text);
 	LOGGER.info(resp.getBody());
@@ -476,7 +497,14 @@ public class GoodDealController implements IHttpServlet {
 
     }
 
-    private void callAdSimpleModelView(String appName, String title, IHttpResponse resp, String contentEncoding, String text) {
+    private void callAdSimpleModelView(String appName, String title, HttpSession session, IHttpResponse resp, String contentEncoding, String text) {
+	
+	User user = (User) session.getValue("user");
+	if (user == null) {
+	    resp.addStringViewAttribute("log", "Login");
+	} else {
+	    resp.addStringViewAttribute("log", "Logout");
+	}
 	
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addStringViewAttribute("title", title);

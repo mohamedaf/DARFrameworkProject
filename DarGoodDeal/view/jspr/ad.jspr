@@ -14,8 +14,7 @@
 				<ul>
 				  <li><a href="http://localhost:1024/good-deal/ads">Ads list</a></li>
 				  <li><a href="http://localhost:1024/good-deal/new-ad">New Ad</a></li>
-				  <li style="float:right"><a href="http://localhost:1024/good-deal/logout">Logout</a></li>
-				  <li style="float:right"><a href="http://localhost:1024/good-deal/login">Login</a></li>
+				  <li style="float:right"><a href="http://localhost:1024/good-deal/{log}">{log}</a></li>
 				</ul>
 				<form class="form">
 					<h1><span class="log-in">{adTitle}</span></h1>
@@ -40,8 +39,7 @@
 									  	  "<ul>" +
 										    "<li><a href=\"http://localhost:1024/good-deal/ads\">Ads list</a></li>" +
 										    "<li><a href=\"http://localhost:1024/good-deal/newAd\">New Ad</a></li>" +
-										    "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/logout\">Logout</a></li>" +
-										    "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/login\">Login</a></li>" +
+										    "<li style=\"float:right\"><a href=\"http://localhost:1024/good-deal/{log}\">{log}</a></li>" +
 										  "</ul>" +
 									  	  "<h1 style=\"margin-left: 42%\">New ad informations</h1>" +
 										  "<form class=\"form\">" +
