@@ -86,8 +86,9 @@ public class SocketThread extends Thread {
 	
 	try {
 	    LOGGER.info("Sending http response");
+	    System.out.println(resp.getBody().length());
+	    System.out.println(resp.toString());
 	    printWriter.write(resp.toString());
-	    printWriter.flush();
 	    printWriter.flush();
 	    socket.close();
 	} catch (IOException e) {

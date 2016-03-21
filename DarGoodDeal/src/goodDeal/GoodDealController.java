@@ -42,18 +42,18 @@ public class GoodDealController implements IHttpServlet {
 	User user = new User("user@upmc.fr", "test");
 	usersProvider.addUser(user);
 	adsProvider.addAd(new Ad(user, "Restaurant Kebab 'Le royaume des gros bides'", "Bonjour,</br></br>"
-		+ "Je met en vente mon restaurant Kebab hérité de père en fils depuis 3 générations !"
+		+ "Je met en vente mon restaurant Kebab herite de pere en fils depuis 3 generations !"
 		+ "Nous fournissons le restaurant avec l'ensemble des recettes encestrale, "
-		+ "qu'on maitrise et qui attire beaucoup de clientèles.</br>"
-		+ "Raison de vente, à force de travailler AAGA je n'ai plus le temps "
-		+ "de m'en occuper, je m'en sépare donc avec tristesse.</br>"
-		+ "Condition de vente, maitre kebabiste diplomé (pas de kababs surgelés).</br></br>"
+		+ "qu'on maitrise et qui attire beaucoup de clienteles.</br>"
+		+ "Raison de vente, a force de travailler AAGA je n'ai plus le temps "
+		+ "de m'en occuper, je m'en separe donc avec tristesse.</br>"
+		+ "Condition de vente, maitre kebabiste diplome (pas de kababs surgeles).</br></br>"
 		+ "Cordialement", 80000));
 	adsProvider.addAd(new Ad(user, "Samsung Galaxy S6", "Bonjour,"
-		+ "</br></br>Je met en vente mon téléphone en excellent état pour "
-		+ "cause d'un passage sur Iphone 6s, le téléphone est toujours "
+		+ "</br></br>Je met en vente mon telephone en excellent etat pour "
+		+ "cause d'un passage sur Iphone 6s, le telephone est toujours "
 		+ "en cours de garantie facture à l'appui, veuillez me joindre "
-		+ "pour plus de détails.</br></br>Cordialement", 300));
+		+ "pour plus de details.</br></br>Cordialement", 300));
 	
     }
 
