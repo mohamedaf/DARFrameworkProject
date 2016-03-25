@@ -82,7 +82,7 @@ public class Dispatcher {
 	    pathMethod = pathNode.getAttributeValue("method");
 	    pathValue = pathNode.getAttributeValue("value");
 
-	    if (pathMethod.equalsIgnoreCase(method.name()) && path.matches(pathValue)) {
+	    if (pathMethod.equalsIgnoreCase(method.name()) && path.toLowerCase().matches(pathValue)) {
 		return checkPathNode(resp, pathNode, params);
 	    }
 	}

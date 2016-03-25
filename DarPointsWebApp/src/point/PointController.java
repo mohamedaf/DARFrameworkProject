@@ -110,7 +110,7 @@ public class PointController implements IHttpServlet {
 
 	if (coord.equalsIgnoreCase("x")) {
 	    if(contentType.startsWith("text/html")) {
-		callPointView(resp, contentEncoding, req.getUrl().getHost(), "x =", p);
+		callCoordView(resp, contentEncoding, req.getUrl().getHost(), "x = ", p, "x");
 		return;
 	    }
 	    String body = "x = " + p.getX();
@@ -118,7 +118,7 @@ public class PointController implements IHttpServlet {
 	    LOGGER.info(body);
 	} else if (coord.equalsIgnoreCase("y")) {
 	    if(contentType.startsWith("text/html")) {
-		callPointView(resp, contentEncoding, req.getUrl().getHost(), "y =", p);
+		callCoordView(resp, contentEncoding, req.getUrl().getHost(), "y = ", p, "y");
 		return;
 	    }
 	    String body = "y = " + p.getY();
@@ -276,6 +276,17 @@ public class PointController implements IHttpServlet {
 	resp.addStringViewAttribute("contentEncoding", contentEncoding);
 	resp.addStringViewAttribute("text", text);
 	resp.addStringViewAttribute("point", p.toString("text/html"));
+	LOGGER.info(resp.setViewContent("view/point.jspr", appName));
+    }
+    
+    private void callCoordView(IHttpResponse resp, String contentEncoding,
+	    String appName, String text, Point p, String coord){
+	resp.addStringViewAttribute("contentEncoding", contentEncoding);
+	resp.addStringViewAttribute("text", text);
+	if(coord.equals("x"))
+	    resp.addStringViewAttribute("point", String.valueOf(p.getX()));
+	else if(coord.equals("y"))
+	    resp.addStringViewAttribute("point", String.valueOf(p.getY()));
 	LOGGER.info(resp.setViewContent("view/point.jspr", appName));
     }
 

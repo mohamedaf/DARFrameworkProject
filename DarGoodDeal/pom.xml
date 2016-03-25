@@ -6,10 +6,20 @@
   
   <dependencies>
   	<dependency>
+		<groupId>org.json</groupId>
+		<artifactId>json</artifactId>
+		<version>20160212</version>
+	</dependency>
+  	<dependency>
 		<groupId>org.slf4j</groupId>
 		<artifactId>slf4j-log4j12</artifactId>
 		<version>1.7.6</version>	
     </dependency>
+    <dependency>
+		<groupId>DarServerApi</groupId>
+		<artifactId>DarServerApi</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
   	<dependency>
 		<groupId>DarWebApplicationApi</groupId>
 		<artifactId>DarWebApplicationApi</artifactId>

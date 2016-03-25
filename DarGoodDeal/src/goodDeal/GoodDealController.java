@@ -20,6 +20,8 @@ import model.response.HttpResponseError;
 import model.response.HttpResponseStatus;
 import model.response.IHttpResponse;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +48,8 @@ public class GoodDealController implements IHttpServlet {
 	User user = new User("user@upmc.fr", "test");
 	usersProvider.addUser(user);
 	adsProvider.addAd(new Ad(user, "Restaurant Kebab 'Le royaume des gros bides'", "Bonjour,</br></br>"
-		+ "Je met en vente mon restaurant Kebab herite de pere en fils depuis 3 generations !"
-		+ "Nous fournissons le restaurant avec l'ensemble des recettes encestrale, "
+		+ "Je met en vente mon restaurant Kebab herite de pere en fils depuis 3 generations ! "
+		+ "Nous fournissons le restaurant avec l'ensemble des recettes ancestrale, "
 		+ "qu'on maitrise et qui attire beaucoup de clienteles.</br>"
 		+ "Raison de vente, a force de travailler AAGA je n'ai plus le temps "
 		+ "de m'en occuper, je m'en separe donc avec tristesse.</br>"
@@ -177,16 +179,21 @@ public class GoodDealController implements IHttpServlet {
     private void getAdsService(IHttpRequest req, IHttpResponse resp) {
 
 	resp.addHeaderValue(HeaderResponseField.CONTENT_TYPE, "application/json");
-	StringBuilder body = new StringBuilder("{ [");
+	JSONObject body = new JSONObject();
+	JSONArray ads = new JSONArray();
+	body.put("ads", ads);
+
 	for(Ad ad : adsProvider.getAds()) {
-	    body.append("{ title : \"" + ad.getTitle() + "\" , price : \"" 
-			+ ad.getPrice() + " EUR\" , contact : \"" 
-			+ ad.getUser().getUsername() + "\" ,  "
-			+ "content : \"" + ad.getContent() + "\" },");
+	    JSONObject a = new JSONObject();
+	    a.put("title", ad.getTitle());
+	    a.put("price", ad.getPrice() + " EUR");
+	    a.put("contact", ad.getUser().getUsername());
+	    a.put("content", ad.getContent());
+	    ads.put(a);
 	}
-	body = body.deleteCharAt(body.length()-1);
-	body.append("] }");
+
 	resp.setBody(body.toString());
+	
 	LOGGER.info(resp.getBody());
 	
     }
@@ -235,10 +242,15 @@ public class GoodDealController implements IHttpServlet {
 	}
 	
 	Ad ad = adsProvider.getAd(id);
-	resp.setBody("{ title : \"" + ad.getTitle() + "\" , price : \"" 
-		+ ad.getPrice() + " EUR\" , contact : \"" 
-		+ ad.getUser().getUsername() + "\" ,  "
-		+ "content : \"" + ad.getContent() + "\" }");
+	
+	JSONObject body = new JSONObject();
+	
+	body.put("title", ad.getTitle());
+	body.put("price", ad.getPrice() + " EUR");
+	body.put("contact", ad.getUser().getUsername());
+	body.put("content", ad.getContent());
+
+	resp.setBody(body.toString());
 	LOGGER.info(resp.getBody());
 	
     }
